@@ -1,0 +1,38 @@
+Package: jobwatcher
+Title: Build pipelines on HGC super-computer
+Version: 0.0.1
+Authors@R:
+    person(given = "Shinichi",
+           family = "Namba",
+           role = c("aut", "cre"),
+           email = "sinnhazime@gmail.com")
+Description: This package provides various funcitons for building pipelines on the super-computer of Human Genome Center.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    drake,
+    XML,
+    dplyr,
+    tidyr,
+    purrr,
+    stringr,
+    cowplot,
+    fs,
+    magrittr,
+    assertthat,
+    rlang,
+    tibble,
+    vctrs,
+    processx,
+    rlist,
+    crayon,
+    cli,
+    clisymbols,
+    ggplot2
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.1.0
+Suggests:
+    testthat,
+    spelling
+Language: en-US
