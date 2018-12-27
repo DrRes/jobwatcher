@@ -66,6 +66,7 @@ write_job <- function(x, path, recursive, add_time) {
 #' @param qsub_args Additional arguments for \emph{qsub}.
 #' @seealso \url{https://supcom.hgc.jp/internal/mediawiki/qsub_%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89}
 #' @return Invisible. A list of Job ID, the path you write your file to, and the time you execute this function.
+#' @export
 write_and_qsub <- function(x, path, recursive = FALSE,
                            add_time = TRUE, qsub_args = character()) {
   time <- character()
@@ -84,6 +85,7 @@ write_and_qsub <- function(x, path, recursive = FALSE,
 #' @param recursive A logical. Whether make parent directory recursively when it does NOT exist.
 #' @param add_time A logical. Whether add the time you execute this function to path for unique naming.
 #' @return Invisible. A list of Job ID, the path you write your file to, and the time you execute this function.
+#' @export
 write_and_qrecall <- function(..., path = fs::path_home(), log_path = NULL, recursive = FALSE, add_time = TRUE) {
   inputs <- dots_parser(...)
   time <- character()
