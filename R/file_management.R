@@ -155,6 +155,6 @@ build_pipeline <- function(pipe_name, pipe_dir, n_parallel = 2L, pipe_memory = 3
   purrr::walk2(path_list, file_list, ~ write(.y, .x, append = FALSE)) %>%
     purrr::walk(~ done("File '", crayon::cyan(.x), "' has been written."))
   todo("Please edit '", crayon::cyan(path_list[[2]]), "' for your own pipeline.")
-  todo("Then, run ", crayon::green(paste0("bash ", path_list[[1]])))
+  todo("Then, run ", crayon::green(paste0("qsub ", path_list[[1]])))
 }
 

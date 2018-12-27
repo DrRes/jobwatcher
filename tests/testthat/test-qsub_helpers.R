@@ -24,7 +24,7 @@ test_that("arrayjob_option", {
 
 test_that("parallel_option", {
   expect_equal(parallel_option(),
-               "#$ -pe def_slot 1\n#$ -l s_vmem=5.3G,mem_req=5.3G\n\n#$ -l !mjobs_rerun\n\n\n\n\n")
+               "#$ -pe def_slot 1\n#$ -l s_vmem=5.3G,mem_req=5.3G\n\n#$ -q '!mjobs_rerun.q'\n\n\n\n\n")
   expect_equal(parallel_option(slot = 2L, no_rerun = FALSE),
                "#$ -pe def_slot 2\n#$ -l s_vmem=5.3G,mem_req=5.3G\n\n\n\n#$ -masterl s_vmem=5.3G,mem_req=5.3G\n\n\n")
   expect_error(parallel_option(slot = 25L))
@@ -33,7 +33,7 @@ test_that("parallel_option", {
   expect_error(parallel_option(env = "mpi_4", slot = 16, memory = 600))
   expect_error(parallel_option(env = "mpi_4", slot = 15, memory = 100))
   expect_equal(parallel_option(env = "mpi_4", slot = 16, memory = 100),
-               "#$ -pe mpi_4 16\n#$ -l s_vmem=100G,mem_req=100G\n\n#$ -l !mjobs_rerun\n#$ -l lmem\n#$ -masterl s_vmem=100G,mem_req=100G\n\n#$ -masterl !mjobs_rerun\n#$ -masterl lmem")
+               "#$ -pe mpi_4 16\n#$ -l s_vmem=100G,mem_req=100G\n\n#$ -q '!mjobs_rerun.q'\n#$ -l lmem\n#$ -masterl s_vmem=100G,mem_req=100G\n\n#$ -masterq '!mjobs_rerun.q'\n#$ -masterl lmem")
   expect_equal(parallel_option(memory = 10L, special_que = "cp"),
                "#$ -pe def_slot 1\n#$ -l cp\n#$ -l s_vmem=10G,mem_req=10G\n")
   expect_warning(parallel_option(env = "mpi_4", slot = 16, ljob = TRUE, memory = 100))
