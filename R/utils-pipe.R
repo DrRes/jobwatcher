@@ -5,55 +5,31 @@
 #'
 #' @name pipe
 #' @keywords internal
+#' @importFrom magrittr %>% %$% %T>%
+#' @export %>% %$% %T>%
+#' @aliases %>% %$% %T>%
 NULL
-
-#' @rdname pipe
-#' @export
-#' @importFrom magrittr %>%
-#' @usage lhs \%>\% rhs
-NULL
-
-#' @rdname pipe
-#' @export
-#' @importFrom magrittr %$%
-#' @usage lhs \%$\% rhs
-NULL
-
-#' @rdname pipe
-#' @export
-#' @importFrom magrittr %T>%
-#' @usage lhs \%T>\% rhs
-NULL
-
 
 #' Multiple assign
 #'
 #' See \code{vctrs::\link[vctrs]{\%<-\%}} for details.
 #'
+#' @name multi_assign
 #' @keywords internal
-#' @export
 #' @importFrom vctrs %<-%
+#' @export %<-%
+#' @aliases %<-%
 #' @usage x \%<-\% value
 NULL
 
 #' Short operators
 #'
 #' See \code{rlang::\link[rlang]{sym}}, \code{rlang::\link[rlang]{syms}}, and \code{dplyr::\link[dplyr]{vars}} for details.
+#'
 #' @keywords internal
 #' @name short_operators
-NULL
-
-#' @rdname short_operators
-#' @export
-#' @importFrom rlang sym
-NULL
-
-#' @rdname short_operators
-#' @export
-#' @importFrom rlang syms
-NULL
-
-#' @rdname short_operators
-#' @export
+#' @importFrom rlang sym syms
 #' @importFrom dplyr vars
+#' @aliases sym syms vars
+#' @export sym syms vars
 NULL

@@ -2,6 +2,9 @@
 % Please edit documentation in R/utils-pipe.R
 \name{pipe}
 \alias{pipe}
+\alias{\%>\%}
+\alias{\%$\%}
+\alias{\%T>\%}
 \title{Pipe operator}
 \description{
 See \code{magrittr::\link[magrittr]{\%>\%}}, \code{magrittr::\link[magrittr]{\%$\%}},

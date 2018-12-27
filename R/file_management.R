@@ -84,7 +84,8 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
           paste0("pl_helloworld <- function(...) qsub_watch('echo HelloWorld > ", file_helloworld, "', name = 'helloworld', directory = dir_opt)"),
           "",
           p_ruler("qrecall"),
-          paste0("write_and_qrecall(your_qrecall_objects, path = '", file_qrecall, "', log_path = '", log_qrecall, "') %>% jobwatch(max_repeat = 1L)"),
+          paste0("job_recall <- write_and_qrecall(your_qrecall_objects, path = '", file_qrecall, "', log_path = '", log_qrecall, "')"),
+          paste0("jobwatch(job_recall, max_repeat = 1L)"),
           paste0("# if you set max_repeat >= 2, you should set additional arguments: qsub_args = '-o ", log_qrecall, "', qrecall = TRUE"),
           "",
           p_ruler("make pipeline"),
@@ -96,9 +97,9 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
           ") -> pipeline",
           "",
           p_ruler("run pipeline"),
-          paste0("pipeline %>% ggsave_pipeline('", fs::path(pipe_dir, "log","pipeline_pre.pdf"), "', width = 30, height = 10)"),
+          paste0("ggsave_pipeline(pipeline, '", fs::path(pipe_dir, "log","pipeline_pre.pdf"), "', width = 30, height = 10)"),
           paste0("drake::make(pipeline, jobs = ", n_parallel, "L)"),
-          paste0("pipeline %>% ggsave_pipeline('", fs::path(pipe_dir, "log","pipeline_post.pdf"), "', width = 30, height = 10)"),
+          paste0("ggsave_pipeline(pipeline, '", fs::path(pipe_dir, "log","pipeline_post.pdf"), "', width = 30, height = 10)"),
           "")
 
   pipe_qsubfile <-
