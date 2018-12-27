@@ -4,8 +4,8 @@
 \alias{jobwatch}
 \title{watch a \emph{qsub} job via \emph{qreport}}
 \usage{
-jobwatch(x, sys_sleep = 60L, max_repeat = 2L,
-  qsub_args = character(), qrecall = FALSE, verbose = FALSE, ...)
+jobwatch(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "",
+  qrecall = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{A list of your job ID, the path of your qsub file, and the time you execute qsub or time before that.}

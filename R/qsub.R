@@ -92,7 +92,8 @@ write_and_qrecall <- function(..., path = fs::path_home(), log_path = NULL, recu
   c(path, time) %<-% write_job(inputs, path, recursive, add_time)
   if (!is.null(log_path)) verify_path(log_path, recursive)
   arg_stdout <- dplyr::if_else(is.null(log_path), "", paste0(" -o ", log_path))
-  qrec <- processx::run(paste0("qrecall -file ", path, arg_stdout))
+  qrec <- system(paste0("qrecall -file ", path, arg_stdout), intern = TRUE)
+  #cannot use process::run for unknown reasons
   message(qrec$stdout)
   stringr::str_split(qrec$stdout, " ")[[1]][3] -> ID
   invisible(list(ID, path, time))

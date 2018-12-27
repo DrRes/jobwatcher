@@ -62,7 +62,7 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
           paste0("fs::dir_create('", log_output, "')"),
           "",
           p_ruler("summarize in/out paths"),
-          "your_qrecall_objects <- character(0)",
+          "your_qrecall_objects <- ''",
           "",
           p_ruler("intermediate file paths"),
           "",
