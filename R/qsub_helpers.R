@@ -23,6 +23,10 @@ resource <- function(...) {
   paste0("#$ ", inputs)
 }
 
+character_1_0 <- function(x){
+  if (x == "") {character(0)} else {x}
+}
+
 #' Arrayjob requirement
 #' @description Generates "-t" argument for "qsub".
 #' @param n An integer which represents number of job-array. If n is 1, arrayjob is not required.
@@ -148,7 +152,7 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
       resource("-l", mem(memory)),
       dplyr::if_else(slot > 1L,
                      resource("-masterl", mem(master_memory)),
-                     ""),
+                     "") %>% character_1_0(),
       sep = "\n"
     ) -> result
   }else{
@@ -180,21 +184,21 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
     stringr::str_c(
       resource("-pe", env, slot),
       resource("-l", mem(memory)),
-      dplyr::if_else(ljob, resource("-l", "ljob"), ""),
-      dplyr::if_else(no_rerun, resource("-q", "'!mjobs_rerun.q'"), ""),
-      dplyr::if_else(lmem, resource("-l", "lmem"), ""),
+      dplyr::if_else(ljob, resource("-l", "ljob"), "") %>% character_1_0(),
+      dplyr::if_else(no_rerun, resource("-q", "'!mjobs_rerun.q'"), "") %>% character_1_0(),
+      dplyr::if_else(lmem, resource("-l", "lmem"), "") %>% character_1_0(),
       dplyr::if_else(slot > 1L,
                      resource("-masterl", mem(master_memory)),
-                     ""),
+                     "") %>% character_1_0(),
       dplyr::if_else(slot > 1L && ljob,
                     resource("-masterl", "ljob"),
-                    ""),
+                    "") %>% character_1_0(),
       dplyr::if_else(slot > 1L && no_rerun,
                      resource("-masterq", "'!mjobs_rerun.q'"),
-                     ""),
+                     "") %>% character_1_0(),
       dplyr::if_else(slot > 1L && lmem,
                      resource("-masterl", "lmem"),
-                     ""),
+                     "") %>% character_1_0(),
       sep = "\n"
     ) -> result
   }
@@ -213,7 +217,15 @@ grov_env <- function(){
   paste0("source ", fs::path_expand("~/.bash_profile"))
 }
 
-convert_to_array <- function(x) stringr::str_c("[", 1:length(x), ']="', x, '"', collapse = " ")
+convert_to_array <- function(x) {
+  stringr::str_c("[", 1:length(x), ']="', x, '"', collapse = " ")
+}
+
+is_bash_name <- function(x) {
+  rlang::is_character(x) &
+    stringr::str_detect(x, "^([:alnum:]|_)+$") &
+    !stringr::str_detect(x, "^[:digit:]")
+}
 
 #' convert lists, vectors, tibbles into \emph{bash-array}
 #' @description Vectors or each column of tibbles will be interpretted as a bash-array when your output is read by bash.
@@ -227,15 +239,10 @@ as_bash_array <- function(..., option = "-a") {
   dots %>%
     rlist::list.flatten() %>%
     purrr::iwalk(~ assertthat::assert_that(is_bash_name(.y))) %>%
-    purrr::imap_chr(~ stringr::str_c("declare ", .z, " ", .y, "=(", convert_to_array(.x), ")"), .z = option) %>%
+    purrr::imap_chr(~ stringr::str_c("declare ", option, " ", .y, "=(", convert_to_array(.x), ")")) %>%
     stringr::str_c(collapse = "\n")
 }
 
-is_bash_name <- function(x) {
-  rlang::is_character(x) &
-    stringr::str_detect(x, "^([:alnum:]|_)+$") &
-    !stringr::str_detect(x, "^[:digit:]")
-}
 
 #' Directory requirements
 #' @param cwd A logical. Whether set the directory where you run your code as current working directory. Otherwise, your home directory is set as current working directory.
@@ -244,9 +251,9 @@ is_bash_name <- function(x) {
 #' @export
 directory_option <- function(cwd = FALSE, out = fs::path_home(), err = fs::path_home()) {
   assertthat::assert_that(length(out) == 1)
-  resource("-o", vctrs::vec_cast(out, character())) -> out
+  resource("-o", fs::path_abs(out)) -> out
   assertthat::assert_that(length(err) == 1)
-  resource("-e", vctrs::vec_cast(err, character())) -> err
+  resource("-e", fs::path_abs(err)) -> err
   dplyr::if_else(cwd, "#$ -cwd", "") -> cwd
   stringr::str_c(cwd, out, err, sep = "\n")
 }

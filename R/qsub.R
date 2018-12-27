@@ -14,6 +14,7 @@ dots_parser <- function(..., sep_collapse = "\n") {
 #' @param use_bash_profile A logical. Whether \emph{source ~/.bash_profile} or not.
 #' @param other_req A character. Other requirements for \emph{qsub}
 #' @seealso \url{https://supcom.hgc.jp/internal/mediawiki/qsub_%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89}
+#' @export
 make_qsubfile <- function(...,
                           name = "pipeline_child",
                           first_line = binbash(),
@@ -52,7 +53,7 @@ write_job <- function(x, path, recursive, add_time) {
   assertthat::assert_that(is.character(x))
   verify_path(path, recursive)
   Sys.time() %>% format("%Y%m%d%H%M") -> time
-  if (add_time) stringr::str_c(path, "_", time) -> path
+  if (add_time) stringr::str_c(fs::path_ext_remove(path), "_", time, ".", fs::path_ext(path)) -> path
   write(x, path, append = F)
   invisible(list(path, time))
 }
