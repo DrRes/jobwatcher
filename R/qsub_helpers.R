@@ -138,7 +138,7 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
     }else if (special_que == "groupname") {
       max_slot <- 12L
       max_memory <- 128L
-      processx::run("id") -> id
+      system("id", intern = TRUE) -> id
       assertthat::assert_that(id$status == 0)
       stringr::str_split(id$stdout, ("\\)|\\("))[[1]][4] %>% paste0(".q") -> groupque
       special_resource <- resource("-q", groupque)

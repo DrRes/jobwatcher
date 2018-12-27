@@ -4,7 +4,7 @@
 \alias{qreport_xml}
 \title{get \emph{qreport} results in xml fromat}
 \usage{
-qreport_xml(ID, begin, user = NA_character_, timeout = Inf)
+qreport_xml(ID, begin, user = NA_character_)
 }
 \arguments{
 \item{ID}{Job ID.}
@@ -12,8 +12,6 @@ qreport_xml(ID, begin, user = NA_character_, timeout = Inf)
 \item{begin}{A character of \strong{\%Y\%m\%d\%H\%M} format.}
 
 \item{user}{Your user ID. (optional)}
-
-\item{timeout}{waiting time for \emph{qreport}, in seconds, or as a difftime object.}
 }
 \description{
 get \emph{qreport} results in xml fromat

@@ -30,26 +30,24 @@ try_xml_to_tbl <- function(xml){
 #' @param ID Job ID.
 #' @param begin A character of \strong{\%Y\%m\%d\%H\%M} format.
 #' @param user Your user ID. (optional)
-#' @param timeout waiting time for \emph{qreport}, in seconds, or as a difftime object.
 #' @export
-qreport_xml <- function(ID, begin, user = NA_character_, timeout = Inf){#ID must NOT be array type.
-  TIMEOUT <- timeout
+qreport_xml <- function(ID, begin, user = NA_character_){#ID must NOT be array type.
   purrr::map(list(ID, begin, user), ~ assertthat::assert_that(length(.x) == 1))
   c(ID, begin, user) %<-% purrr::map(list(ID, begin, user), vctrs::vec_cast, character())
   user_option <- dplyr::if_else(is.na(user), "", paste0(" -o ", user))
-  processx::run(
+  system(
     paste0("qreport -j ", ID, user_option, " -b ", begin, " -x"),
-    timeout = TIMEOUT
+    intern = TRUE
   ) -> result
-  result$stdout
+  result
 }
 
 #' get \emph{qreport} results as a tibble
 #'
 #' @inheritParams qreport_xml
 #' @export
-qreport_tbl <- function(ID, begin, user = NA_character_, timeout = Inf){#ID must NOT be array type.
-  qreport_xml(ID, begin, user, timeout) %>% try_xml_to_tbl()
+qreport_tbl <- function(ID, begin, user = NA_character_){#ID must NOT be array type.
+  qreport_xml(ID, begin, user) %>% try_xml_to_tbl()
 }
 
 #' watch a \emph{qsub} job via \emph{qreport}

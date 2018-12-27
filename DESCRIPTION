@@ -23,7 +23,6 @@ Imports:
     rlang,
     tibble,
     vctrs,
-    processx,
     rlist,
     crayon,
     cli,

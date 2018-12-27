@@ -73,9 +73,9 @@ write_and_qsub <- function(x, path, recursive = FALSE,
   time <- character()
   c(path, time) %<-% write_job(x, path, recursive, add_time)
   assertthat::assert_that(is.character(qsub_args))
-  qsubres <- processx::run(stringr::str_c("qsub ", path), qsub_args)
-  message(qsubres$stdout)
-  stringr::str_split(qsubres$stdout, " ")[[1]][3] -> ID
+  qsubres <- system(paste0("qsub ", path, " ", qsub_args), intern = TRUE)
+  message(qsubres)
+  stringr::str_split(qsubres, " ")[[1]][3] -> ID
   invisible(list(ID, path, time))
 }
 
@@ -100,10 +100,14 @@ write_and_qrecall <- function(..., path = fs::path_home(), log_path = NULL, recu
   invisible(list(ID, path, time))
 }
 
-seq_int_chr <- function(from, to, by){
-  dplyr::if_else(is.na(from) || is.na(to) || is.na(by),
-                 "undefined",
-                 seq.int(from, to, by) %>% as.character())
+seq_int_chr <- function(from_to_by){
+  from = to = by = integer()
+  c(from, to, by) %<-% (from_to_by %>% vctrs::vec_cast(integer()))
+  if(is.na(from) || is.na(to) || is.na(by)) {
+    "undefined"
+  }else{
+    seq.int(from, to, by) %>% as.character()
+  }
 }
 
 #' \emph{qsub} a file
@@ -117,8 +121,8 @@ qsub <- function(path, qsub_args = "", qrecall = FALSE){
   assertthat::assert_that(is.character(qsub_args))
   time <- format(Sys.time(), "%Y%m%d%H%M")
   command <- dplyr::if_else(qrecall, "qrecall -file ", "qsub ")
-  qsubres <- processx::run(paste0(command, path), args = qsub_args)
-  message(qsubres$stdout)
-  stringr::str_split(qsubres$stdout, " ")[[1]][3] -> ID
+  qsubres <- system(paste0(command, path, " ", qsub_args), intern = TRUE)
+  message(qsubres)
+  stringr::str_split(qsubres, " ")[[1]][3] -> ID
   invisible(list(ID, path, time))
 }
