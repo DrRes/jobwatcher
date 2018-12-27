@@ -63,7 +63,7 @@ qreport_tbl <- function(ID, begin, user = NA_character_, timeout = Inf){#ID must
 #' @param ... Other paramaters for \code{\link{qreport_tbl}}. \strong{user} and \strong{timeout} can be specified.
 #' @return Invisible. A list of your final job ID, the path of your qsub file, and the time of final qsub.
 #' @export
-jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = character(), qrecall = FALSE, verbose = FALSE, ...){
+jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecall = FALSE, verbose = FALSE, ...){
   #perse ID and time
   x %>%
     purrr::walk(~ assertthat::assert_that(length(.x) == 1)) %>%
