@@ -35,10 +35,10 @@ qreport_xml <- function(ID, begin, user = NA_character_){#ID must NOT be array t
   purrr::map(list(ID, begin, user), ~ assertthat::assert_that(length(.x) == 1))
   c(ID, begin, user) %<-% purrr::map(list(ID, begin, user), vctrs::vec_cast, character())
   user_option <- dplyr::if_else(is.na(user), "", paste0(" -o ", user))
-  system(
+  suppressWarnings(system(
     paste0("qreport -j ", ID, user_option, " -b ", begin, " -x"),
     intern = TRUE
-  ) -> result
+  ) -> result)
   result
 }
 
@@ -84,7 +84,7 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
     if (nrow(rep_filt) > 0) {
       rep_filt %>% dplyr::mutate_at(dplyr::vars("exit_status", "failed"), as.integer) -> rep_filt
       rep_filt %>% dplyr::filter(!!sym("taskid") %in% task) -> rep_filt
-      if (dplyr::setdiff(task, rep$taskid) == character(0)) {
+      if (identical(dplyr::setdiff(task, rep$taskid), character(0))) {
         if (sum(rep_filt$exit_status, rep_filt$failed) == 0) {
           if (verbose) as.data.frame(rep) %>% print()#debug
           rlang::inform(paste0("'", path, "' has been done."))
