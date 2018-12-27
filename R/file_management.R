@@ -139,7 +139,7 @@ ggsave_pipeline <- function(plan, path, ...){
 build_pipeline <- function(pipe_name, pipe_dir, n_parallel = 2L, pipe_memory = 3L, force = FALSE, make_subdir = TRUE){
   file_list <- pipeline_preset(pipe_name, pipe_dir, n_parallel, pipe_memory)
   dir_exist <- fs::dir_exists(pipe_dir)
-  if ((!force) && (!make_subdir) && dir_exist) {
+  if ((!force) && make_subdir && dir_exist) {
     rlang::abort(paste0(pipe_dir, "exists. If you'd like to continue, set force = TRUE."))
   }
   if (!dir_exist) {
