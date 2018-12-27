@@ -5,7 +5,7 @@
 \title{write out and \emph{qsub}}
 \usage{
 write_and_qsub(x, path, recursive = FALSE, add_time = TRUE,
-  qsub_args = character())
+  qsub_args = "")
 }
 \arguments{
 \item{x}{A character. contents of file.}

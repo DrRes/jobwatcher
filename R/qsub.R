@@ -68,7 +68,7 @@ write_job <- function(x, path, recursive, add_time) {
 #' @return Invisible. A list of Job ID, the path you write your file to, and the time you execute this function.
 #' @export
 write_and_qsub <- function(x, path, recursive = FALSE,
-                           add_time = TRUE, qsub_args = character()) {
+                           add_time = TRUE, qsub_args = "") {
   time <- character()
   c(path, time) %<-% write_job(x, path, recursive, add_time)
   assertthat::assert_that(is.character(qsub_args))
@@ -91,7 +91,7 @@ write_and_qrecall <- function(..., path = fs::path_home(), log_path = NULL, recu
   time <- character()
   c(path, time) %<-% write_job(inputs, path, recursive, add_time)
   if (!is.null(log_path)) verify_path(log_path, recursive)
-  arg_stdout <- dplyr::if_else(is.null(log_path), character(), paste0(" -o ", log_path))
+  arg_stdout <- dplyr::if_else(is.null(log_path), "", paste0(" -o ", log_path))
   qrec <- processx::run(paste0("qrecall -file ", path, arg_stdout))
   message(qrec$stdout)
   stringr::str_split(qrec$stdout, " ")[[1]][3] -> ID
@@ -110,7 +110,7 @@ seq_int_chr <- function(from, to, by){
 #' @param qrecall A logical. Whether use qrecall -file instead of qsub.
 #' @return Invisible. A list of Job ID, the path you write your file to, and the time you execute this function.
 #' @export
-qsub <- function(path, qsub_args = character(), qrecall = FALSE){
+qsub <- function(path, qsub_args = "", qrecall = FALSE){
   assertthat::assert_that(fs::file_exists(path))
   assertthat::assert_that(is.character(qsub_args))
   time <- format(Sys.time(), "%Y%m%d%H%M")

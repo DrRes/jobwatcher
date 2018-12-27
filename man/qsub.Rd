@@ -4,7 +4,7 @@
 \alias{qsub}
 \title{\emph{qsub} a file}
 \usage{
-qsub(path, qsub_args = character(), qrecall = FALSE)
+qsub(path, qsub_args = "", qrecall = FALSE)
 }
 \arguments{
 \item{path}{A character. The path to a \emph{qsub/qrecall} file.}
