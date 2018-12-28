@@ -72,7 +72,7 @@ write_job <- function(x, path, recursive, add_time) {
 save_and_qsub <- function(x, file_path, file_dir, recursive = FALSE,
                            add_time = TRUE, qsub_args = "") {
   time <- character()
-  path <- dplyr::if_else(is.na(file_dir), file_path, fs::path(file_path, file_dir)) %>% fs::path_abs()
+  path <- dplyr::if_else(is.na(file_dir), file_path, fs::path(file_path, file_dir) %>% as.character()) %>% fs::path_abs()
   c(path, time) %<-% write_job(x, path, recursive, add_time)
   assertthat::assert_that(is.character(qsub_args))
   qsubres <- system(paste0("qsub ", path, " ", qsub_args), intern = TRUE)
