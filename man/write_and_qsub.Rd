@@ -4,7 +4,7 @@
 \alias{write_and_qsub}
 \title{write and \emph{qsub}}
 \usage{
-write_and_qsub(..., file_path, file_dir = NA_character_,
+write_and_qsub(..., script_path, script_dir = NA_character_,
   name = NA_character_, first_line = binbash(),
   parallel = parallel_option(), arrayjob = arrayjob_option(),
   directory = directory_option(), use_bash_profile = TRUE,
@@ -14,9 +14,9 @@ write_and_qsub(..., file_path, file_dir = NA_character_,
 \arguments{
 \item{...}{Your codes (default: \emph{bash} codes). Each argument should be a character vector. Multiple arguments and multiple elements will be separated with a line break.}
 
-\item{file_path}{A character. The path to write a file.}
+\item{script_path}{A character. The path to write a file.}
 
-\item{file_dir}{A character. It will concatenated with file_path..}
+\item{script_dir}{A character. It will concatenated with file_path..}
 
 \item{name}{A character}
 

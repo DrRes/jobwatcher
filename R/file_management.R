@@ -36,7 +36,7 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
   log_output <-
     fs::path(pipe_dir, "log", "hello")
   file_helloworld <-
-    fs::path(pipe_dir, "world", ext = "txt")
+    fs::path(dir_output, "helloworld", ext = "txt")
   log_pipeline <-
     fs::path(pipe_dir, "log")
 
@@ -66,14 +66,14 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
           "pl_makefile <-",
           paste0("  qsub_function('touch ",file_helloworld , "', file_path = 'makefile', file_dir = '", dir_script, "', directory = dir_opt)"),
           "pl_hello <- qsub_function(",
-          "  as_bash_array(Hello),",
-          paste0("  'echo ${Hello[$SGE_TASK_ID]} > ", file_helloworld, "',"),
+          "  as_bash_array(Hello = Hello),",
+          paste0("  'echo ${Hello[$SGE_TASK_ID]} >> ", file_helloworld, "',"),
           paste0("  file_path = 'hello', file_dir = '", dir_script, "',"),
           "  arrayjob = arrayjob_option(length(Hello)),",
           "  directory = dir_opt",
           ")",
-          paste0("pl_world <- qsub_function('echo World > ", file_helloworld, "', file_path = 'world', file_dir = '", dir_script, "', directory = dir_opt)"),
-          paste0("pl_helloworld <- qsub_function('echo HelloWorld > ", file_helloworld, "', file_path = 'helloworld', file_dir = '", dir_script, "', directory = dir_opt)"),
+          paste0("pl_world <- qsub_function('echo World >> ", file_helloworld, "', file_path = 'world', file_dir = '", dir_script, "', directory = dir_opt)"),
+          paste0("pl_helloworld <- qsub_function('echo HelloWorld >> ", file_helloworld, "', file_path = 'helloworld', file_dir = '", dir_script, "', directory = dir_opt)"),
           "",
           p_ruler("qrecall"),
           paste0("job_recall <- write_and_qrecall(your_qrecall_objects, path = '", file_qrecall, "', log_path = '", log_qrecall, "')"),

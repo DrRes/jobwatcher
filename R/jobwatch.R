@@ -114,8 +114,8 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
 #' @param jobwatch_args A list. Elements are passed to \code{\link{jobwatch}}
 #' @export
 qsub_function <- function(...,
-                          file_path,
-                          file_dir = NA_character_,
+                          script_path,
+                          script_dir = NA_character_,
                           name = NA_character_,
                           first_line = binbash(),
                           parallel = parallel_option(),
@@ -127,12 +127,12 @@ qsub_function <- function(...,
                           add_time = TRUE,
                           qsub_args = "", 
                           jobwatch_args = list()){
-  NAME = FIRST_LINE = PARALLEL = ARRAYJOB = DIRECTORY = USE_BASH_PROFILE = OTHER_REQ = FILE_PATH = FILE_DIR = RECURSIVE = ADD_TIME = QSUB_ARGS = NA_character_
-  c(NAME, FIRST_LINE, PARALLEL, ARRAYJOB, DIRECTORY, USE_BASH_PROFILE, OTHER_REQ, FILE_PATH, FILE_DIR, RECURSIVE, ADD_TIME, QSUB_ARGS) %<-% 
-    list(name, first_line, parallel, arrayjob, directory, use_bash_profile, other_req, file_path, file_dir, recursive, add_time, qsub_args)
+  NAME = FIRST_LINE = PARALLEL = ARRAYJOB = DIRECTORY = USE_BASH_PROFILE = OTHER_REQ = SCRIPT_PATH = SCRIPT_DIR = RECURSIVE = ADD_TIME = QSUB_ARGS = NA_character_
+  c(NAME, FIRST_LINE, PARALLEL, ARRAYJOB, DIRECTORY, USE_BASH_PROFILE, OTHER_REQ, SCRIPT_PATH, SCRIPT_DIR, RECURSIVE, ADD_TIME, QSUB_ARGS) %<-% 
+    list(name, first_line, parallel, arrayjob, directory, use_bash_profile, other_req, script_path, script_dir, recursive, add_time, qsub_args)
   c(
     list(...),
-    list(file_path = FILE_PATH, file_dir = FILE_DIR, name = NAME, first_line = FIRST_LINE, parallel = PARALLEL, arrayjob = ARRAYJOB, directory = DIRECTORY, 
+    list(script_path = SCRIPT_PATH, script_dir = SCRIPT_DIR, name = NAME, first_line = FIRST_LINE, parallel = PARALLEL, arrayjob = ARRAYJOB, directory = DIRECTORY, 
          use_bash_profile = USE_BASH_PROFILE, other_req = OTHER_REQ, recursive = RECURSIVE, add_time = ADD_TIME, qsub_args = QSUB_ARGS)
   ) -> args_list
   

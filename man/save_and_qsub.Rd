@@ -4,15 +4,15 @@
 \alias{save_and_qsub}
 \title{save and \emph{qsub}}
 \usage{
-save_and_qsub(x, file_path, file_dir, recursive = FALSE,
+save_and_qsub(x, script_path, script_dir, recursive = FALSE,
   add_time = TRUE, qsub_args = "")
 }
 \arguments{
 \item{x}{A character. contents of file.}
 
-\item{file_path}{A character. The path to write a file.}
+\item{script_path}{A character. The path to write a file.}
 
-\item{file_dir}{A character. It will concatenated with file_path..}
+\item{script_dir}{A character. It will concatenated with file_path..}
 
 \item{recursive}{A logical. Whether make parent directory recursively when it does NOT exist.}
 

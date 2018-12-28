@@ -68,18 +68,18 @@ write_job <- function(x, path, recursive, add_time) {
 #' save and \emph{qsub}
 #'
 #' @param x A character. contents of file.
-#' @param file_path A character. The path to write a file.
-#' @param file_dir A character. It will concatenated with file_path..
+#' @param script_path A character. The path to write a file.
+#' @param script_dir A character. It will concatenated with file_path..
 #' @param recursive A logical. Whether make parent directory recursively when it does NOT exist.
 #' @param add_time A logical. Whether add the time you execute this function to path for unique naming.
 #' @param qsub_args Additional arguments for \emph{qsub}.
 #' @seealso \url{https://supcom.hgc.jp/internal/mediawiki/qsub_%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89}
 #' @return Invisible. A list of Job ID, the path you write your file to, and the time you execute this function.
 #' @export
-save_and_qsub <- function(x, file_path, file_dir, recursive = FALSE,
+save_and_qsub <- function(x, script_path, script_dir, recursive = FALSE,
                            add_time = TRUE, qsub_args = "") {
   time <- character()
-  path <- dplyr::if_else(is.na(file_dir), file_path, fs::path(file_dir, file_path) %>% as.character()) %>% fs::path_abs()
+  path <- dplyr::if_else(is.na(script_dir), script_path, fs::path(script_dir, script_path) %>% as.character()) %>% fs::path_abs()
   c(path, time) %<-% write_job(x, path, recursive, add_time)
   assertthat::assert_that(is.character(qsub_args))
   qsubres <- system(paste0("qsub ", path, " ", qsub_args), intern = TRUE)
@@ -92,8 +92,8 @@ save_and_qsub <- function(x, file_path, file_dir, recursive = FALSE,
 #' 
 #' @description shorthand of \code{\link{save_and_qsub}}(\code{\link{make_qsubfile}}())
 #' @param ... Your codes (default: \emph{bash} codes). Each argument should be a character vector. Multiple arguments and multiple elements will be separated with a line break.
-#' @param file_path A character. The path to write a file.
-#' @param file_dir A character. It will concatenated with file_path..
+#' @param script_path A character. The path to write a file.
+#' @param script_dir A character. It will concatenated with file_path..
 #' @param name A character
 #' @param first_line A character. It is written in the first line.
 #' @param parallel A character
@@ -108,8 +108,8 @@ save_and_qsub <- function(x, file_path, file_dir, recursive = FALSE,
 #' @return Invisible. A list of Job ID, the path you write your file to, and the time you execute this function.
 #' @export
 write_and_qsub <- function(...,
-                          file_path, 
-                          file_dir = NA_character_,
+                          script_path, 
+                          script_dir = NA_character_,
                           name = NA_character_,
                           first_line = binbash(),
                           parallel = parallel_option(),
@@ -120,11 +120,11 @@ write_and_qsub <- function(...,
                           recursive = FALSE,
                           add_time = TRUE,
                           qsub_args = ""){
-  NAME = FIRST_LINE = PARALLEL = ARRAYJOB = DIRECTORY = USE_BASH_PROFILE = OTHER_REQ = FILE_PATH = FILE_DIR = RECURSIVE = ADD_TIME = QSUB_ARGS = NA_character_
-  c(NAME, FIRST_LINE, PARALLEL, ARRAYJOB, DIRECTORY, USE_BASH_PROFILE, OTHER_REQ, FILE_PATH, FILE_DIR, RECURSIVE, ADD_TIME, QSUB_ARGS) %<-% 
-    list(name, first_line, parallel, arrayjob, directory, use_bash_profile, other_req, file_path, file_dir, recursive, add_time, qsub_args)
+  NAME = FIRST_LINE = PARALLEL = ARRAYJOB = DIRECTORY = USE_BASH_PROFILE = OTHER_REQ = SCRIPT_PATH = SCRIPT_DIR = RECURSIVE = ADD_TIME = QSUB_ARGS = NA_character_
+  c(NAME, FIRST_LINE, PARALLEL, ARRAYJOB, DIRECTORY, USE_BASH_PROFILE, OTHER_REQ, SCRIPT_PATH, SCRIPT_DIR, RECURSIVE, ADD_TIME, QSUB_ARGS) %<-% 
+    list(name, first_line, parallel, arrayjob, directory, use_bash_profile, other_req, script_path, script_dir, recursive, add_time, qsub_args)
   make_qsubfile(..., name = NAME, first_line = FIRST_LINE, parallel = PARALLEL, arrayjob = ARRAYJOB, directory = DIRECTORY, use_bash_profile = USE_BASH_PROFILE, other_req = OTHER_REQ) %>% 
-    save_and_qsub(file_path = FILE_PATH, file_dir = FILE_DIR, recursive = RECURSIVE, add_time = ADD_TIME, qsub_args = QSUB_ARGS)
+    save_and_qsub(script_path = SCRIPT_PATH, script_dir = SCRIPT_DIR, recursive = RECURSIVE, add_time = ADD_TIME, qsub_args = QSUB_ARGS)
 }
 
 #' write out and \emph{qrecall}

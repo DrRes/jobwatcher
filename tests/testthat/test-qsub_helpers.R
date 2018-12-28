@@ -36,6 +36,7 @@ test_that("parallel_option", {
                "#$ -pe def_slot 1\n#$ -l docker,docker_images=\"hoo:1\"\n#$ -l s_vmem=5.3G,mem_req=5.3G")
 })
 
+test_args <- "test"
 test_that("as_bash_array", {
   expect_identical(convert_to_array(c(1,2,3)), '[1]=\"1\" [2]=\"2\" [3]=\"3\"')
   expect_equal(is_bash_name("1f"), FALSE)
@@ -43,6 +44,8 @@ test_that("as_bash_array", {
   expect_equal(is_bash_name("foo"), TRUE)
   expect_identical(as_bash_array(tibble::tibble(x = c(1,2), y = c("a", "b")), z = c("x", "y", "z")), 
                             'declare -a x=([1]=\"1\" [2]=\"2\")\ndeclare -a y=([1]=\"a\" [2]=\"b\")\ndeclare -a z=([1]=\"x\" [2]=\"y\" [3]=\"z\")')
+  expect_identical(as_bash_array(test_args = test_args), 
+                   'declare -a test_args=([1]=\"test\")')
 })
 
 test_that("directory_option", {

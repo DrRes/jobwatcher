@@ -242,7 +242,7 @@ as_bash_array <- function(..., option = "-a") {
     purrr::imap_chr(~ stringr::str_c("declare ", option, " ", .y, "=(", convert_to_array(.x), ")")) %>%
     stringr::str_c(collapse = "\n")
 }
-
+#TODO always require names. e.g. hello = c(1,2);as_bash_array(hello = hello).
 
 #' Directory requirements
 #' @param cwd A logical. Whether set the directory where you run your code as current working directory. Otherwise, your home directory is set as current working directory.
