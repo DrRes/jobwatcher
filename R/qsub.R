@@ -53,7 +53,14 @@ write_job <- function(x, path, recursive, add_time) {
   assertthat::assert_that(is.character(x))
   verify_path(path, recursive)
   Sys.time() %>% format("%Y%m%d%H%M") -> time
-  if (add_time) stringr::str_c(fs::path_ext_remove(path), "_", time, ".", fs::path_ext(path)) -> path
+  if (add_time) {
+    ext <- fs::path_ext(path)
+    if(ext == ""){
+      stringr::str_c(fs::path_ext_remove(path), "_", time) -> path
+    }else{
+      stringr::str_c(fs::path_ext_remove(path), "_", time, ".", fs::path_ext(path)) -> path
+    }
+  }
   write(x, path, append = F)
   invisible(list(path, time))
 }

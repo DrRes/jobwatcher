@@ -68,7 +68,7 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
           "pl_hello <- qsub_function(",
           "  as_bash_array(Hello),",
           paste0("  'echo ${Hello[$SGE_TASK_ID]} > ", file_helloworld, "',"),
-          paste0("  path = '", dir_script, "/hello',"),
+          paste0("  file_path = 'hello', file_dir = '", dir_script, "',"),
           "  arrayjob = arrayjob_option(length(Hello)),",
           "  directory = dir_opt",
           ")",
