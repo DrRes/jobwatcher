@@ -4,7 +4,7 @@
 \alias{make_qsubfile}
 \title{make a file suitable for \emph{qsub}}
 \usage{
-make_qsubfile(..., name = "pipeline_child", first_line = binbash(),
+make_qsubfile(..., name = NA_character_, first_line = binbash(),
   parallel = parallel_option(), arrayjob = arrayjob_option(),
   directory = directory_option(), use_bash_profile = TRUE,
   other_req = character(0))

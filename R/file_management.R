@@ -21,15 +21,7 @@ p_load_github_chr <- function(pkg) {
 p_ruler <- function(x) paste0("#", x, "=================================")
 
 pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
-  #assertthat::assert_that(is.integer(n_parallel))
-  #assertthat::assert_that(is.numeric(pipe_memory))
-  package_load <-
-    paste0(
-      #purrr::map_chr(c("tidyverse", "drake", "cowplot", "fs") ~ p_load_chr) %>%
-      #  stringr::str_c(collapse = "\n"),
-      #"\n",
-      p_load_github_chr("jobwatcher")
-    )
+  package_load <- p_load_github_chr("jobwatcher")
 
   pipe_dir <-
     fs::path_abs(pipe_dir)
@@ -39,6 +31,8 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
     fs::path(pipe_dir, "config", "qrecall.txt")
   dir_output <-
     fs::path(pipe_dir, "output")
+  dir_script <- 
+    fs::path(pipe_dir, "script")
   log_output <-
     fs::path(pipe_dir, "log", "hello")
   file_helloworld <-
@@ -52,7 +46,7 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
           package_load,
           "",
           p_ruler("declare variables"),
-          "hello <- c('H', 'e', 'l', 'l', 'o')",
+          "Hello <- c('H', 'e', 'l', 'l', 'o')",
           "",
           p_ruler("parse config"),
           "#For config yaml files, we recommend fascinating {config} and {rlist} packages to parse them.",
@@ -68,20 +62,19 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
           "",
           p_ruler("make functions of qscript files"),
           "qsub_watch <- purrr::compose(jobwatch, write_and_qsub)",
-          paste0("dir_opt <- directory_option(out = '",log_output , "', err = '",log_output , "')"),
+          paste0("dir_opt <- directory_option(out = '", log_output , "', err = '",log_output , "')"),
           "",
-          "pl_makefile <- function(...) {",
-          paste0("  qsub_watch('touch ",file_helloworld , "', name = 'makefile', directory = dir_opt)"),
-          "}",
-          "pl_hello <- function(...) {",
-          "  qsub_watch(as_bash_array(hello),",
-          paste0("             'echo ${hello[$SGE_TASK_ID]} > ", file_helloworld, "',"),
-          "             name = 'hello',",
-          "             arrayjob = arrayjob_option(length(hello)),",
-          "             directory = dir_opt)",
-          "}",
-          paste0("pl_world <- function(...) qsub_watch('echo World > ", file_helloworld, "', name = 'world', directory = dir_opt)"),
-          paste0("pl_helloworld <- function(...) qsub_watch('echo HelloWorld > ", file_helloworld, "', name = 'helloworld', directory = dir_opt)"),
+          "pl_makefile <-",
+          paste0("  qsub_function('touch ",file_helloworld , "', path = '", dir_script, "/makefile', directory = dir_opt)"),
+          "pl_hello <- qsub_function(",
+          "  qsub_watch(as_bash_array(Hello),",
+          paste0("  'echo ${Hello[$SGE_TASK_ID]} > ", file_helloworld, "',"),
+          paste0("  path = '", dir_script, "/hello',"),
+          "  arrayjob = arrayjob_option(length(Hello)),",
+          "  directory = dir_opt)",
+          ")",
+          paste0("pl_world <- qsub_function('echo World > ", file_helloworld, "', path = '", dir_script, "/world', directory = dir_opt)"),
+          paste0("pl_helloworld <- qsub_function('echo HelloWorld > ", file_helloworld, "', path = '", dir_script, "/helloworld', directory = dir_opt)"),
           "",
           p_ruler("qrecall"),
           paste0("job_recall <- write_and_qrecall(your_qrecall_objects, path = '", file_qrecall, "', log_path = '", log_qrecall, "')"),
@@ -93,7 +86,7 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
           "  makefile = pl_makefile(),",
           "  hello = pl_hello(makefile),",
           "  world = pl_world(makefile),",
-          "  helloworld = pl_helloworld(hello, world)",
+          "  helloworld = pl_helloworld(c(hello, world))",
           ") -> pipeline",
           "",
           p_ruler("run pipeline"),

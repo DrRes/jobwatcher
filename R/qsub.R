@@ -16,7 +16,7 @@ dots_parser <- function(..., sep_collapse = "\n") {
 #' @seealso \url{https://supcom.hgc.jp/internal/mediawiki/qsub_%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89}
 #' @export
 make_qsubfile <- function(...,
-                          name = "pipeline_child",
+                          name = NA_character_,
                           first_line = binbash(),
                           parallel = parallel_option(),
                           arrayjob = arrayjob_option(),
@@ -30,10 +30,10 @@ make_qsubfile <- function(...,
     first_line,
     parallel,
     arrayjob,
-    resource("-N", name),
+    dplyr::if_else(is.na(name), "", resource("-N", name)) %>% character_1_0(),
     directory,
     other_req,
-    dplyr::if_else(use_bash_profile, grov_env(), ""),
+    dplyr::if_else(use_bash_profile, grov_env(), "") %>% character_1_0(),
     "##########",
     inputs,
     sep = "\n")
@@ -58,7 +58,7 @@ write_job <- function(x, path, recursive, add_time) {
   invisible(list(path, time))
 }
 
-#' write out and \emph{qsub}
+#' save and \emph{qsub}
 #'
 #' @param x A character. contents of file.
 #' @param path A character. The path to write a file.
@@ -68,7 +68,7 @@ write_job <- function(x, path, recursive, add_time) {
 #' @seealso \url{https://supcom.hgc.jp/internal/mediawiki/qsub_%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89}
 #' @return Invisible. A list of Job ID, the path you write your file to, and the time you execute this function.
 #' @export
-write_and_qsub <- function(x, path, recursive = FALSE,
+save_and_qsub <- function(x, path, recursive = FALSE,
                            add_time = TRUE, qsub_args = "") {
   time <- character()
   c(path, time) %<-% write_job(x, path, recursive, add_time)
@@ -77,6 +77,40 @@ write_and_qsub <- function(x, path, recursive = FALSE,
   message(qsubres)
   stringr::str_split(qsubres, " ")[[1]][3] -> ID
   invisible(list(ID, path, time))
+}
+
+#' write and \emph{qsub}
+#' 
+#' @description shorthand of \code{\link{save_and_qsub}}(\code{\link{make_qsubfile}}())
+#' @param ... Your codes (default: \emph{bash} codes). Each argument should be a character vector. Multiple arguments and multiple elements will be separated with a line break.
+#' @param path A character. The path to write a file.
+#' @param name A character
+#' @param first_line A character. It is written in the first line.
+#' @param parallel A character
+#' @param arrayjob A character
+#' @param directory A character
+#' @param use_bash_profile A logical. Whether \emph{source ~/.bash_profile} or not.
+#' @param other_req A character. Other requirements for \emph{qsub}
+#' @param recursive A logical. Whether make parent directory recursively when it does NOT exist.
+#' @param add_time A logical. Whether add the time you execute this function to path for unique naming.
+#' @param qsub_args Additional arguments for \emph{qsub}.
+#' @seealso \url{https://supcom.hgc.jp/internal/mediawiki/qsub_%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89}
+#' @return Invisible. A list of Job ID, the path you write your file to, and the time you execute this function.
+#' @export
+write_and_qsub <- function(...,
+                          path, 
+                          name = NA_character_,
+                          first_line = binbash(),
+                          parallel = parallel_option(),
+                          arrayjob = arrayjob_option(),
+                          directory = directory_option(),
+                          use_bash_profile = TRUE,
+                          other_req = character(0),
+                          recursive = FALSE,
+                          add_time = TRUE,
+                          qsub_args = ""){
+  make_qsubfile(..., name, first_line, parallel, arrayjob, directory, use_bash_profile, other_req) %>% 
+    save_and_qsub(path, recursive, add_time, qsub_args)
 }
 
 #' write out and \emph{qrecall}

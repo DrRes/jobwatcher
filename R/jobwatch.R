@@ -104,9 +104,34 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
   invisible(list(ID, path, time))
 }
 
-# qsub a job and watch progress
-# @export
-#qsub_watch <- purrr::compose(jobwatch, write_and_qsub)
+#' make function for qsub a job and watch progress
+#' 
+#' @description short hand of creating a function 
+#'   doing fixed \code{\link{write_and_qsub}} and \code{\link{jobwatch}}
+#'   regardless arguments of created function.
+#'
+#' @inheritParams write_and_qsub
+#' @param jobwatch_args A list. Elements are passed to \code{\link{jobwatch}}
+#' @export
+qsub_function <- function(...,
+                          path, 
+                          name = NA_character_,
+                          first_line = binbash(),
+                          parallel = parallel_option(),
+                          arrayjob = arrayjob_option(),
+                          directory = directory_option(),
+                          use_bash_profile = TRUE,
+                          other_req = character(0),
+                          recursive = FALSE,
+                          add_time = TRUE,
+                          qsub_args = "", 
+                          jobwatch_args = list()){
+  function(dammy_arg){
+    write_and_qsub(..., path, name, first_line, parallel, arrayjob, directory, 
+                   use_bash_profile, other_req, recursive, add_time, qsub_args) -> jobs
+    purrr::lift_dl(jobwatch, x = jobs)(jobwatch_args)
+  }
+}
 
 # qrecall files and watch progress
 # @export
