@@ -113,8 +113,11 @@ write_and_qsub <- function(...,
                           recursive = FALSE,
                           add_time = TRUE,
                           qsub_args = ""){
-  make_qsubfile(..., name, first_line, parallel, arrayjob, directory, use_bash_profile, other_req) %>% 
-    save_and_qsub(file_path, file_dir, recursive, add_time, qsub_args)
+  NAME = FIRST_LINE = PARALLEL = ARRAYJOB = DIRECTORY = USE_BASH_PROFILE = OTHER_REQ = FILE_PATH = FILE_DIR = RECURSIVE = ADD_TIME = QSUB_ARGS = NA_character_
+  c(NAME, FIRST_LINE, PARALLEL, ARRAYJOB, DIRECTORY, USE_BASH_PROFILE, OTHER_REQ, FILE_PATH, FILE_DIR, RECURSIVE, ADD_TIME, QSUB_ARGS) %<-% 
+    list(name, first_line, parallel, arrayjob, directory, use_bash_profile, other_req, file_path, file_dir, recursive, add_time, qsub_args)
+  make_qsubfile(..., name = NAME, first_line = FIRST_LINE, parallel = PARALLEL, arrayjob = ARRAYJOB, directory = DIRECTORY, use_bash_profile = USE_BASH_PROFILE, other_req = OTHER_REQ) %>% 
+    save_and_qsub(file_path = FILE_PATH, file_dir = FILE_DIR, recursive = RECURSIVE, add_time = ADD_TIME, qsub_args = QSUB_ARGS)
 }
 
 #' write out and \emph{qrecall}

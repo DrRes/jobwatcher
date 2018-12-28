@@ -127,9 +127,13 @@ qsub_function <- function(...,
                           add_time = TRUE,
                           qsub_args = "", 
                           jobwatch_args = list()){
+  NAME = FIRST_LINE = PARALLEL = ARRAYJOB = DIRECTORY = USE_BASH_PROFILE = OTHER_REQ = FILE_PATH = FILE_DIR = RECURSIVE = ADD_TIME = QSUB_ARGS = NA_character_
+  c(NAME, FIRST_LINE, PARALLEL, ARRAYJOB, DIRECTORY, USE_BASH_PROFILE, OTHER_REQ, FILE_PATH, FILE_DIR, RECURSIVE, ADD_TIME, QSUB_ARGS) %<-% 
+    list(name, first_line, parallel, arrayjob, directory, use_bash_profile, other_req, file_path, file_dir, recursive, add_time, qsub_args)
+  
   function(dammy_arg){
-    write_and_qsub(..., file_path = file_path, file_dir = file_dir, name = name, first_line- first_line, parallel = parallel, arrayjob = arrayjob, directory = directory, 
-                   use_bash_profile = use_bash_profile, other_req = other_req, recursive = recursive, add_time = add_time, qsub_args = qsub_args) -> jobs
+    write_and_qsub(..., file_path = FILE_PATH, file_dir = FILE_DIR, name = NAME, first_line = FIRST_LINE, parallel = PARALLEL, arrayjob = ARRAYJOB, directory = DIRECTORY, 
+                   use_bash_profile = USE_BASH_PROFILE, other_req = OTHER_REQ, recursive = RECURSIVE, add_time = ADD_TIME, qsub_args = QSUB_ARGS) -> jobs
     purrr::lift_dl(jobwatch, x = jobs)(jobwatch_args)
   }
 }
