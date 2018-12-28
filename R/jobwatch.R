@@ -114,7 +114,8 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
 #' @param jobwatch_args A list. Elements are passed to \code{\link{jobwatch}}
 #' @export
 qsub_function <- function(...,
-                          path, 
+                          file_path,
+                          file_dir = NA_character_,
                           name = NA_character_,
                           first_line = binbash(),
                           parallel = parallel_option(),
@@ -127,8 +128,8 @@ qsub_function <- function(...,
                           qsub_args = "", 
                           jobwatch_args = list()){
   function(dammy_arg){
-    write_and_qsub(..., path, name, first_line, parallel, arrayjob, directory, 
-                   use_bash_profile, other_req, recursive, add_time, qsub_args) -> jobs
+    write_and_qsub(..., file_path = file_path, file_dir = file_dir, name = name, first_line- first_line, parallel = parallel, arrayjob = arrayjob, directory = directory, 
+                   use_bash_profile = use_bash_profile, other_req = other_req, recursive = recursive, add_time = add_time, qsub_args = qsub_args) -> jobs
     purrr::lift_dl(jobwatch, x = jobs)(jobwatch_args)
   }
 }

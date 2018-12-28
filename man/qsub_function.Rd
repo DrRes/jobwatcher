@@ -4,7 +4,8 @@
 \alias{qsub_function}
 \title{make function for qsub a job and watch progress}
 \usage{
-qsub_function(..., path, name = NA_character_, first_line = binbash(),
+qsub_function(..., file_path, file_dir = NA_character_,
+  name = NA_character_, first_line = binbash(),
   parallel = parallel_option(), arrayjob = arrayjob_option(),
   directory = directory_option(), use_bash_profile = TRUE,
   other_req = character(0), recursive = FALSE, add_time = TRUE,
@@ -13,7 +14,9 @@ qsub_function(..., path, name = NA_character_, first_line = binbash(),
 \arguments{
 \item{...}{Your codes (default: \emph{bash} codes). Each argument should be a character vector. Multiple arguments and multiple elements will be separated with a line break.}
 
-\item{path}{A character. The path to write a file.}
+\item{file_path}{A character. The path to write a file.}
+
+\item{file_dir}{A character. It will concatenated with file_path..}
 
 \item{name}{A character}
 
