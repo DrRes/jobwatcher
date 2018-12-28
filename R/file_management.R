@@ -61,7 +61,6 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
           p_ruler("intermediate file paths"),
           "",
           p_ruler("make functions of qscript files"),
-          "qsub_watch <- purrr::compose(jobwatch, write_and_qsub)",
           paste0("dir_opt <- directory_option(out = '", log_output , "', err = '",log_output , "')"),
           "",
           "pl_makefile <-",
