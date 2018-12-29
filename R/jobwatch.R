@@ -58,10 +58,11 @@ qreport_tbl <- function(ID, begin, user = NA_character_){#ID must NOT be array t
 #' @param qsub_args A character. Additional arguments for \emph{qsub/qrecall}.
 #' @param qrecall A logical. Whether use \emph{qrecall -file} instead of \emph{qsub} when re-subbing your job.
 #' @param verbose A logical.
+#' @param debug A logical.
 #' @param ... Other paramaters for \code{\link{qreport_tbl}}. \strong{user} and \strong{timeout} can be specified.
 #' @return Invisible. A list of your final job ID, the path of your qsub file, and the time of final qsub.
 #' @export
-jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecall = FALSE, verbose = FALSE, ...){
+jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecall = FALSE, verbose = FALSE, debug = FALSE, ...){
   #perse ID and time
   x %>%
     purrr::walk(~ assertthat::assert_that(length(.x) == 1)) %>%
@@ -74,16 +75,27 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
   ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
   ID_body <- ID_vec[1]
   task <- ID_vec[2:4] %>% seq_int_chr()
+  if (debug) print(paste0("ID: ", stringr::str_c(task, collapse = ", ")))
   counter <- 0
   while (TRUE) {
     Sys.sleep(sys_sleep)
     rep <- qreport_tbl(ID, time, ...)
+    if (debug) {
+      print("qreport: ")
+      print(rep)
+      }
     rep %>%
       tidyr::replace_na(list(failed_txt = "")) %>%
       dplyr::filter(!!sym("failed_txt") != "Rescheduling") -> rep_filt
     if (nrow(rep_filt) > 0) {
       rep_filt %>% dplyr::mutate_at(dplyr::vars("exit_status", "failed"), as.integer) -> rep_filt
       rep_filt %>% dplyr::filter(!!sym("taskid") %in% task) -> rep_filt
+      if (debug) {
+        print("filtered: ")
+        print(rep_filt)
+        print(paste0("setdiff: ", stringr::str_c(dplyr::setdiff(task, rep$taskid), collapse = ", ")))
+        print(paste0("sum: ", sum(rep_filt$exit_status, rep_filt$failed)))
+        }
       if (identical(dplyr::setdiff(task, rep$taskid), character(0))) {
         if (sum(rep_filt$exit_status, rep_filt$failed) == 0) {
           if (verbose) as.data.frame(rep) %>% print()#debug
