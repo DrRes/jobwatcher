@@ -83,7 +83,7 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
   user = fs::path_home() %>% fs::path_file() %>% as.character()
   while (TRUE) {
     Sys.sleep(sys_sleep)
-    rep <- qreport_tbl(ID, time, user)
+    rep <- qreport_tbl(ID_body, time, user)
     if (debug) {
       print("qreport: ")
       print(rep)
