@@ -61,8 +61,9 @@ qreport_tbl <- function(ID, begin, user = NA_character_){#ID must NOT be array t
 #' @param debug A logical.
 #' @return Invisible. A list of your final job ID, the path of your qsub file, and the time of final qsub.
 #' @export
-jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecall = FALSE, verbose = FALSE, debug = FALSE, ...){
+jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecall = FALSE, verbose = FALSE, debug = FALSE){
   #perse ID and time
+  if (debug) {verbose <- TRUE}
   x %>%
     purrr::walk(~ assertthat::assert_that(length(.x) == 1)) %>%
     purrr::map(vctrs::vec_cast, character()) -> x
@@ -74,7 +75,7 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
   ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
   ID_body <- ID_vec[1]
   task <- ID_vec[2:4] %>% seq_int_chr()
-  if (debug || verbose) {
+  if (verbose) {
     todo(crayon::green(path), 
          "\nID: ", crayon::cyan(ID_body), 
          "\ntaskid: ", crayon::cyan(stringr::str_c(task, collapse = ", ")),
@@ -104,17 +105,15 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
       if (identical(dplyr::setdiff(task, rep$taskid), character(0))) {
         if (sum(rep_filt$exit_status, rep_filt$failed) == 0) {
           if (debug) as.data.frame(rep) %>% print()#debug
-          if (debug || verbose) {
-            rlang::inform(done("'", crayon::cyan(path), "' has been done."))
-            done("'", crayon::cyan(path), "' has been done.") #message and print
-          }
+          rlang::inform(done("'", crayon::cyan(path), "' has been done."))
+          if (verbose) done("'", crayon::cyan(path), "' has been done.") #message and print
           break
         }else{
           counter <- counter + 1
           if (counter < max_repeat) {
             c(ID, path, time) %<-% qsub(path, qsub_args, qrecall)
           }else{
-            if (debug || verbose) as.data.frame(rep) %>% print()#debug
+            if (verbose) as.data.frame(rep) %>% print()#debug
             rlang::abort(paste0("'", path, "' has something to cause error or fail."), "qsub_contents_error")
           }
         }

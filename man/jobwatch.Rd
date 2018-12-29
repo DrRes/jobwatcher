@@ -5,7 +5,7 @@
 \title{watch a \emph{qsub} job via \emph{qreport}}
 \usage{
 jobwatch(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "",
-  qrecall = FALSE, verbose = FALSE, debug = FALSE, ...)
+  qrecall = FALSE, verbose = FALSE, debug = FALSE)
 }
 \arguments{
 \item{x}{A list of your job ID, the path of your qsub file, and the time you execute qsub or time before that.}
@@ -21,8 +21,6 @@ jobwatch(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "",
 \item{verbose}{A logical.}
 
 \item{debug}{A logical.}
-
-\item{...}{Other paramaters for \code{\link{qreport_tbl}}. \strong{user} and \strong{timeout} can be specified.}
 }
 \value{
 Invisible. A list of your final job ID, the path of your qsub file, and the time of final qsub.
