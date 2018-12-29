@@ -59,7 +59,6 @@ qreport_tbl <- function(ID, begin, user = NA_character_){#ID must NOT be array t
 #' @param qrecall A logical. Whether use \emph{qrecall -file} instead of \emph{qsub} when re-subbing your job.
 #' @param verbose A logical.
 #' @param debug A logical.
-#' @param ... Other paramaters for \code{\link{qreport_tbl}}. \strong{user} and \strong{timeout} can be specified.
 #' @return Invisible. A list of your final job ID, the path of your qsub file, and the time of final qsub.
 #' @export
 jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecall = FALSE, verbose = FALSE, debug = FALSE, ...){
@@ -75,11 +74,16 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
   ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
   ID_body <- ID_vec[1]
   task <- ID_vec[2:4] %>% seq_int_chr()
-  if (debug) print(paste0("ID: ", stringr::str_c(task, collapse = ", ")))
+  if (debug) {
+    print(paste0("ID: ", ID_body))
+    print(paste0("taskid: ", stringr::str_c(task, collapse = ", ")))
+    print(paste0("time: ", time))
+    }
   counter <- 0
+  user = fs::path_home() %>% fs::path_file() %>% as.character()
   while (TRUE) {
     Sys.sleep(sys_sleep)
-    rep <- qreport_tbl(ID, time, ...)
+    rep <- qreport_tbl(ID, time, user)
     if (debug) {
       print("qreport: ")
       print(rep)
