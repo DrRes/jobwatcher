@@ -74,10 +74,11 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
   ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
   ID_body <- ID_vec[1]
   task <- ID_vec[2:4] %>% seq_int_chr()
-  if (debug) {
-    print(paste0("ID: ", ID_body))
-    print(paste0("taskid: ", stringr::str_c(task, collapse = ", ")))
-    print(paste0("time: ", time))
+  if (debug || verbose) {
+    todo(crayon::green(path), 
+         "\nID: ", crayon::cyan(ID_body), 
+         "\ntaskid: ", crayon::cyan(stringr::str_c(task, collapse = ", ")),
+         "\ntime: ", crayon::cyan(time))
     }
   counter <- 0
   user = fs::path_home() %>% fs::path_file() %>% as.character()
@@ -102,15 +103,18 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
         }
       if (identical(dplyr::setdiff(task, rep$taskid), character(0))) {
         if (sum(rep_filt$exit_status, rep_filt$failed) == 0) {
-          if (verbose) as.data.frame(rep) %>% print()#debug
-          rlang::inform(paste0("'", path, "' has been done."))
+          if (debug) as.data.frame(rep) %>% print()#debug
+          if (debug || verbose) {
+            rlang::inform(done("'", crayon::cyan(path), "' has been done."))
+            done("'", crayon::cyan(path), "' has been done.") #message and print
+          }
           break
         }else{
           counter <- counter + 1
           if (counter < max_repeat) {
             c(ID, path, time) %<-% qsub(path, qsub_args, qrecall)
           }else{
-            if (verbose) as.data.frame(rep) %>% print()#debug
+            if (debug || verbose) as.data.frame(rep) %>% print()#debug
             rlang::abort(paste0("'", path, "' has something to cause error or fail."), "qsub_contents_error")
           }
         }
