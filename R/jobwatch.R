@@ -42,18 +42,18 @@ qreport_xml <- function(ID, begin, user = NA_character_){#ID must NOT be array t
   result
 }
 
-qsub_verbose <- function(ID_body, task, time){
-  stringr::str_glue("\nID: ", crayon::cyan(ID_body), 
-       "\ntaskid: ", crayon::cyan(stringr::str_c(task, collapse = ", ")),
-       "\ntime: ", crayon::cyan(time))
-}
-
 #' get \emph{qreport} results as a tibble
 #'
 #' @inheritParams qreport_xml
 #' @export
 qreport_tbl <- function(ID, begin, user = NA_character_){#ID must NOT be array type.
   qreport_xml(ID, begin, user) %>% try_xml_to_tbl()
+}
+
+qsub_verbose <- function(ID_body, task, time){
+  stringr::str_glue("\nID: ", crayon::cyan(ID_body), 
+                    "\ntaskid: ", crayon::cyan(stringr::str_c(task, collapse = ", ")),
+                    "\ntime: ", crayon::cyan(time)) %>% cli::cat_line()
 }
 
 #' watch a \emph{qsub} job via \emph{qreport}
