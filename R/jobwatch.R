@@ -42,6 +42,12 @@ qreport_xml <- function(ID, begin, user = NA_character_){#ID must NOT be array t
   result
 }
 
+qsub_verbose <- function(ID_body, task, time){
+  stringr::str_glue("\nID: ", crayon::cyan(ID_body), 
+       "\ntaskid: ", crayon::cyan(stringr::str_c(task, collapse = ", ")),
+       "\ntime: ", crayon::cyan(time))
+}
+
 #' get \emph{qreport} results as a tibble
 #'
 #' @inheritParams qreport_xml
@@ -76,10 +82,8 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
   ID_body <- ID_vec[1]
   task <- ID_vec[2:4] %>% seq_int_chr()
   if (verbose) {
-    todo(crayon::green(path), 
-         "\nID: ", crayon::cyan(ID_body), 
-         "\ntaskid: ", crayon::cyan(stringr::str_c(task, collapse = ", ")),
-         "\ntime: ", crayon::cyan(time))
+    todo(crayon::green(path))
+    qsub_verbose(ID_body, task, time)
     }
   counter <- 0
   user = fs::path_home() %>% fs::path_file() %>% as.character()
@@ -112,6 +116,10 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
           counter <- counter + 1
           if (counter < max_repeat) {
             c(ID, path, time) %<-% qsub(path, qsub_args, qrecall)
+            ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
+            ID_body <- ID_vec[1]
+            task <- ID_vec[2:4] %>% seq_int_chr()
+            if (verbose) qsub_verbose(ID_body, task, time)
           }else{
             if (verbose) as.data.frame(rep) %>% print()#debug
             rlang::abort(paste0("'", path, "' has something to cause error or fail."), "qsub_contents_error")
