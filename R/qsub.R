@@ -170,7 +170,7 @@ qsub <- function(path, qsub_args = "", qrecall = FALSE){
   time <- format(Sys.time(), "%Y%m%d%H%M")
   command <- dplyr::if_else(qrecall, "qrecall -file ", "qsub ")
   qsubres <- system(paste0(command, path, " ", qsub_args), intern = TRUE)
-  message(qsubres)
+  rlang::inform(qsubres)
   stringr::str_split(qsubres, " ")[[1]][3] -> ID
   invisible(list(ID, path, time))
 }

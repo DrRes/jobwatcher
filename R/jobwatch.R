@@ -51,7 +51,7 @@ qreport_tbl <- function(ID, begin, user = NA_character_){#ID must NOT be array t
 }
 
 qsub_verbose <- function(ID_body, task, time){
-  stringr::str_glue("\nID: ", crayon::cyan(ID_body), 
+  stringr::str_glue("ID: ", crayon::cyan(ID_body), 
                     "\ntaskid: ", crayon::cyan(stringr::str_c(task, collapse = ", ")),
                     "\ntime: ", crayon::cyan(time)) %>% cli::cat_line()
 }
@@ -114,14 +114,24 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
           break
         }else{
           counter <- counter + 1
+          if (verbose) {
+            fail("The job with",
+                 "\n ID: ", crayon::cyan(ID_body),
+                 "\n path: ", crayon::cyam(path),
+                 "\nhave failed.")
+            as.data.frame(rep) %>% print()
+            }#debug
           if (counter < max_repeat) {
             c(ID, path, time) %<-% qsub(path, qsub_args, qrecall)
+            rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path)))
             ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
             ID_body <- ID_vec[1]
             task <- ID_vec[2:4] %>% seq_int_chr()
-            if (verbose) qsub_verbose(ID_body, task, time)
+            if (verbose) {
+              todo("#", counter, " resub: ", crayon::cyan(path))
+              qsub_verbose(ID_body, task, time)
+              }
           }else{
-            if (verbose) as.data.frame(rep) %>% print()#debug
             rlang::abort(paste0("'", path, "' has something to cause error or fail."), "qsub_contents_error")
           }
         }
