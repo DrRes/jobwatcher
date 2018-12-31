@@ -247,12 +247,13 @@ as_bash_array <- function(..., option = "-a") {
 #' Directory requirements
 #' @param cwd A logical. Whether set the directory where you run your code as current working directory. Otherwise, your home directory is set as current working directory.
 #' @param out Path to write stdout
-#' @param err Path to write stderr
+#' @param err Path to write stderr (option). If unspecified, \emph{out} argument will be used instead.
 #' @export
-directory_option <- function(cwd = FALSE, out = fs::path_home(), err = fs::path_home()) {
+directory_option <- function(cwd = FALSE, out = fs::path_home(), err = NA_character_) {
   assertthat::assert_that(length(out) == 1)
-  resource("-o", fs::path_abs(out)) -> out
   assertthat::assert_that(length(err) == 1)
+  if (is.na(err)) err <- out
+  resource("-o", fs::path_abs(out)) -> out
   resource("-e", fs::path_abs(err)) -> err
   dplyr::if_else(cwd, "#$ -cwd", "") -> cwd
   stringr::str_c(cwd, out, err, sep = "\n")

@@ -126,12 +126,20 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", modify
             qsub_args_new <- qsub_args
             if (modify_req) qsub_args_new <- paste0(qsub_args, " ", rep_filt$recommended_option[1])
             c(ID, path, time) %<-% qsub(path, qsub_args_new, qrecall)
-            rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path)))
+            if (modify_req) {
+              rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path), "\nadditional args: ", qsub_args_new))
+            }else{
+              rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path)))
+            }
             ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
             ID_body <- ID_vec[1]
             task <- ID_vec[2:4] %>% seq_int_chr()
             if (verbose) {
-              todo("#", counter, " resub: ", crayon::cyan(path))
+              if (modify_req) {
+                todo("#", counter, " resub: ", crayon::cyan(path), "\nadditional args: ", qsub_args_new)
+              }else{
+                todo("#", counter, " resub: ", crayon::cyan(path))
+              }
               qsub_verbose(ID_body, task, time)
               }
           }else{
