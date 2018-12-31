@@ -124,7 +124,7 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", modify
             }#debug
           if (counter < max_repeat) {
             qsub_args_new <- qsub_args
-            if (modify_req) qsub_args_new <- paste0(qsub_args, " ", reps_filt$recommended_option[1])
+            if (modify_req) qsub_args_new <- paste0(qsub_args, " ", rep_filt$recommended_option[1])
             c(ID, path, time) %<-% qsub(path, qsub_args_new, qrecall)
             rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path)))
             ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
