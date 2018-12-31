@@ -117,7 +117,7 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
           if (verbose) {
             fail("The job with",
                  "\n ID: ", crayon::cyan(ID_body),
-                 "\n path: ", crayon::cyam(path),
+                 "\n path: ", crayon::cyan(path),
                  "\nhave failed.")
             as.data.frame(rep) %>% print()
             }#debug
