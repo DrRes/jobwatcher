@@ -62,12 +62,13 @@ qsub_verbose <- function(ID_body, task, time){
 #' @param sys_sleep A numeric. \emph{qreport} interval in seconds.
 #' @param max_repeat A integer. Total times of trying \emph{qsub} the same file.
 #' @param qsub_args A character. Additional arguments for \emph{qsub/qrecall}.
+#' @param modify_req A logical. When re-qsubbing, whether to add recommended requests to qsub_args
 #' @param qrecall A logical. Whether use \emph{qrecall -file} instead of \emph{qsub} when re-subbing your job.
 #' @param verbose A logical.
 #' @param debug A logical.
 #' @return Invisible. A list of your final job ID, the path of your qsub file, and the time of final qsub.
 #' @export
-jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecall = FALSE, verbose = FALSE, debug = FALSE){
+jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", modify_req = TRUE, qrecall = FALSE, verbose = FALSE, debug = FALSE){
   #perse ID and time
   if (debug) {verbose <- TRUE}
   x %>%
@@ -118,11 +119,13 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", qrecal
             fail("The job with",
                  "\n ID: ", crayon::cyan(ID_body),
                  "\n path: ", crayon::cyan(path),
-                 "\nhave failed.")
+                 "\nhas failed.")
             as.data.frame(rep) %>% print()
             }#debug
           if (counter < max_repeat) {
-            c(ID, path, time) %<-% qsub(path, qsub_args, qrecall)
+            qsub_args_new <- qsub_args
+            if (modify_req) qsub_args_new <- paste0(qsub_args, " ", reps_filt$recommended_option[1])
+            c(ID, path, time) %<-% qsub(path, qsub_args_new, qrecall)
             rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path)))
             ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
             ID_body <- ID_vec[1]
