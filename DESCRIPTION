@@ -1,6 +1,6 @@
 Package: jobwatcher
 Title: Build pipelines on HGC super-computer
-Version: 0.0.3
+Version: 0.0.4
 Authors@R:
     person(given = "Shinichi",
            family = "Namba",
@@ -13,21 +13,23 @@ LazyData: true
 Imports:
     drake,
     XML,
+    rlang,
+    magrittr,
+    tibble,
+    readr,
     dplyr,
     tidyr,
     purrr,
     stringr,
+    ggplot2,
     fs,
-    magrittr,
     assertthat,
-    rlang,
-    tibble,
+    zeallot,
     vctrs,
     rlist,
     crayon,
     cli,
-    clisymbols,
-    ggplot2
+    clisymbols
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.0
 Suggests:

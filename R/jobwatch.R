@@ -110,8 +110,8 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", modify
       if (identical(dplyr::setdiff(task, rep$taskid), character(0))) {
         if (sum(rep_filt$exit_status, rep_filt$failed) == 0) {
           if (debug) as.data.frame(rep) %>% print()#debug
-          rlang::inform(done("'", crayon::cyan(path), "' has been done."))
-          if (verbose) done("'", crayon::cyan(path), "' has been done.") #message and print
+          message(done("'", crayon::cyan(path), "' has been done.")) #message->stderr, inform->stdout
+          if (verbose) rlang::inform(done("'", crayon::cyan(path), "' has been done.")) #message and print
           break
         }else{
           counter <- counter + 1
@@ -124,14 +124,30 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", modify
             }#debug
           if (counter < max_repeat) {
             qsub_args_new <- qsub_args
-            if (modify_req) qsub_args_new <- paste0(qsub_args, " ", rep_filt$recommended_option[1])
+            if (modify_req) {
+              qsub_args_new <- paste0(qsub_args, " ", rep_filt$recommended_option[1])
+              if (qsub_args == "" || length(qsub_args) == 0) {
+                readr::read_lines(path) %>% 
+                  c(qsub_args_new) %>% 
+                  write_job(path, recursive = TRUE, add_time = TRUE) %->% c(path, time)
+                qsub_args_new <- qsub_args 
+               }
+            }
             c(ID, path, time) %<-% qsub(path, qsub_args_new, qrecall)
-            rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path)))
+            if (modify_req) {
+              rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path), "\nadditional args: ", qsub_args_new))
+            }else{
+              rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path)))
+            }
             ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
             ID_body <- ID_vec[1]
             task <- ID_vec[2:4] %>% seq_int_chr()
             if (verbose) {
-              todo("#", counter, " resub: ", crayon::cyan(path))
+              if (modify_req) {
+                todo("#", counter, " resub: ", crayon::cyan(path), "\nadditional args: ", qsub_args_new)
+              }else{
+                todo("#", counter, " resub: ", crayon::cyan(path))
+              }
               qsub_verbose(ID_body, task, time)
               }
           }else{

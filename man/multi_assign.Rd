@@ -3,11 +3,9 @@
 \name{multi_assign}
 \alias{multi_assign}
 \alias{\%<-\%}
+\alias{\%->\%}
 \title{Multiple assign}
-\usage{
-x \%<-\% value
-}
 \description{
-See \code{vctrs::\link[vctrs]{\%<-\%}} for details.
+See \code{zeallot::\link[zeallot]{\%<-\%}} for details.
 }
 \keyword{internal}
