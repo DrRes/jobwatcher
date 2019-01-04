@@ -1,4 +1,16 @@
-# jobwatcher 0.0.2
+# jobwatcher 0.0.4
+
+## 0.0.4
+
+* **verbose** mode of *jobwatch()* have got to send messages to stdout and stderr more wisely.
+* **modify_req** option of *jobwatch()* was modified. If you do not supply any additional arguments originally, it does not pass recommended arguments directly to *qsub* any more, and instead it adds them to the end of your script.
+* zeallot::`%->%` was newly imported and exported.
+
+## 0.0.3
+
+* Bugs fixed
+* **verbose** mode of *jobwatch()* got more informative.
+* **modify_req** option was added to *jobwatch()*.
 
 ## 0.0.2
 

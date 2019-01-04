@@ -124,7 +124,15 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", modify
             }#debug
           if (counter < max_repeat) {
             qsub_args_new <- qsub_args
-            if (modify_req) qsub_args_new <- paste0(qsub_args, " ", rep_filt$recommended_option[1])
+            if (modify_req) {
+              qsub_args_new <- paste0(qsub_args, " ", rep_filt$recommended_option[1])
+              if (qsub_args == "" || length(qsub_args) == 0) {
+                readr::read_lines(path) %>% 
+                  c(qsub_args_new) %>% 
+                  write_job(path, recursive = TRUE, add_time = TRUE) %->% c(path, time)
+                qsub_args_new <- qsub_args 
+               }
+            }
             c(ID, path, time) %<-% qsub(path, qsub_args_new, qrecall)
             if (modify_req) {
               rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path), "\nadditional args: ", qsub_args_new))

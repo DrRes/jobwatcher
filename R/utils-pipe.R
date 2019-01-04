@@ -12,14 +12,13 @@ NULL
 
 #' Multiple assign
 #'
-#' See \code{vctrs::\link[vctrs]{\%<-\%}} for details.
+#' See \code{zeallot::\link[zeallot]{\%<-\%}} for details.
 #'
 #' @name multi_assign
 #' @keywords internal
-#' @importFrom vctrs %<-%
-#' @export %<-%
-#' @aliases %<-%
-#' @usage x \%<-\% value
+#' @importFrom zeallot %<-% %->%
+#' @export %<-% %->%
+#' @aliases %<-% %->%
 NULL
 
 #' Short operators
