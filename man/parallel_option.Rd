@@ -15,7 +15,7 @@ parallel_option(env = "def_slot", slot = 1L, memory = 5.3,
 
 \item{memory}{A double. Memory requirement(Gb).}
 
-\item{master_memory}{A double (option). Memory requirement for the master que. If unspecified, memory argument is used instead. If slot is 1, this argument will be ignored.}
+\item{master_memory}{A double (option). Memory requirement for the master que. If \emph{slot} is 1 or \emph{master_memory} is equal to \emph{memory}, this argument will be ignored.}
 
 \item{ljob}{A logical. Whether need to run more than 2 days. if you require more than 128Gb in total, this option is automatically set as FALSE.}
 

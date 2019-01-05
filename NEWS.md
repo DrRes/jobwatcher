@@ -1,4 +1,8 @@
-# jobwatcher 0.0.4
+# jobwatcher 0.0.4.9000
+
+## 0.0.4.9000
+
+* *parallel_option()* do not generate -masterl or -masterq request any more when **master_memory** is not specified.
 
 ## 0.0.4
 
