@@ -114,7 +114,12 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
 #' @param ... Additional arguments for \code{ggplot2::\link[ggplot2]{ggsave}}
 #' @export
 ggsave_pipeline <- function(plan, path, ...){
-  g <- plan %>% drake::drake_config() %>% drake::drake_ggraph() + ggplot2::theme_void()
+  suppressWarnings(
+    g <- plan %>% drake::drake_config() %>% drake::drake_ggraph() +
+      ggplot2::theme_void() + 
+      ggplot2::coord_flip() + 
+      ggplot2::scale_x_continuous(trans = "reverse")
+  )
   ggplot2::ggsave(path, g, ...)
 
 }

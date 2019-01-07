@@ -110,7 +110,7 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", modify
       if (identical(dplyr::setdiff(task, rep$taskid), character(0))) {
         if (sum(rep_filt$exit_status, rep_filt$failed) == 0) {
           if (debug) as.data.frame(rep) %>% print()#debug
-          message(done("'", crayon::cyan(path), "' has been done.")) #message->stderr, inform->stdout
+          message(paste0("'", path, "' has been done.")) #message->stderr, inform->stdout
           if (verbose) rlang::inform(done("'", crayon::cyan(path), "' has been done.")) #message and print
           break
         }else{
