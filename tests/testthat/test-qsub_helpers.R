@@ -39,6 +39,7 @@ test_that("parallel_option", {
 test_args <- "test"
 test_that("as_bash_array", {
   expect_identical(convert_to_array(c(1,2,3)), '[1]=\"1\" [2]=\"2\" [3]=\"3\"')
+  expect_identical(convert_to_array(c(1,2,NA)), '[1]=\"1\" [2]=\"2\" [3]=\"\"')
   expect_equal(is_bash_name("1f"), FALSE)
   expect_equal(is_bash_name("1.d"), FALSE)
   expect_equal(is_bash_name("foo"), TRUE)

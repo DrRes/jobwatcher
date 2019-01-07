@@ -218,6 +218,7 @@ grov_env <- function(){
 }
 
 convert_to_array <- function(x) {
+  x[is.na(x)] <- "" #escape NA in order not to return NA
   stringr::str_c("[", 1:length(x), ']="', x, '"', collapse = " ")
 }
 
@@ -228,7 +229,7 @@ is_bash_name <- function(x) {
 }
 
 #' convert lists, vectors, tibbles into \emph{bash-array}
-#' @description Vectors or each column of tibbles will be interpretted as a bash-array when your output is read by bash.
+#' @description Vectors or each column of tibbles will be interpretted as a bash-array when your output is read by bash. NA will be changed to "".
 #' @param ... Lists, vectors, or tibbles. Elements with the same name will be overwritten by the last one.
 #' @param option An option for declare function of bash. This argument is used for all arguments.
 #' @export
