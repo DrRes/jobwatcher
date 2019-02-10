@@ -60,7 +60,7 @@ arrayjob_option <- function(n = 1L, tc = 100L, stepsize = NULL) {
 #' @param env A character. Choose one of "def_slot", "mpi", "mpi-fillup", "mpi_4", "mpi_8", "mpi_16", "mpi_24".
 #' @param slot An integer. The number of slots. If env is either "mpi" or "mpi-fillup", 2-length integer vector representing minimun and maximun nubmer of slots is also accepted.
 #' @param memory A double. Memory requirement(Gb).
-#' @param master_memory A double (option). Memory requirement for the master que. If unspecified, memory argument is used instead. If slot is 1, this argument will be ignored.
+#' @param master_memory A double (option). Memory requirement for the master que. If \emph{slot} is 1 or \emph{master_memory} is equal to \emph{memory}, this argument will be ignored.
 #' @param ljob A logical. Whether need to run more than 2 days. if you require more than 128Gb in total, this option is automatically set as FALSE.
 #' @param no_rerun A logical. Whether allow to run on rerun ques.
 #' @param special_que A character (option). Choose one of "cp", "docker", "knl", "gpu", "\emph{groupname}". If specified, ljob option will be ignored.
@@ -85,7 +85,7 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
   if (env %in% c("mpi", "mpi-fillup")) {
     assertthat::assert_that(length(slot) %in% c(1, 2))
     if (length(slot) == 1) slot <- rep(slot, 2)
-    dplyr::if_else(env == "mpi", 1, slot[2]) -> max_slot
+    dplyr::if_else(env == "mpi", 1L, vctrs::vec_cast(slot[2], integer())) -> max_slot
   }else{
     assertthat::assert_that(length(slot) == 1)
     slot -> max_slot
@@ -108,7 +108,7 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
     dplyr::filter(!!dplyr::sym("ENV") == env) -> df
   df$SLOT_NODE -> slot_node
   df$BASE_SLOT -> base_slot
-  assertthat::assert_that(slot %% base_slot == 0)
+  assertthat::assert_that(slot[1] %% base_slot == 0)
   slot_node * memory + dplyr::if_else(slot_node > 1L, master_memory - memory, 0) -> total_memory
   if (stringr::str_detect(env, "^mpi")) max(total_memory, slot_node * memory) -> total_memory
 
@@ -150,7 +150,7 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
       resource("-pe", env, slot),
       special_resource,
       resource("-l", mem(memory)),
-      dplyr::if_else(slot > 1L,
+      dplyr::if_else(slot > 1L && master_memory != memory,
                      resource("-masterl", mem(master_memory)),
                      "") %>% character_1_0(),
       sep = "\n"
@@ -187,16 +187,16 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
       dplyr::if_else(ljob, resource("-l", "ljob"), "") %>% character_1_0(),
       dplyr::if_else(no_rerun, resource("-q", "'!mjobs_rerun.q'"), "") %>% character_1_0(),
       dplyr::if_else(lmem, resource("-l", "lmem"), "") %>% character_1_0(),
-      dplyr::if_else(slot > 1L,
+      dplyr::if_else(slot > 1L && master_memory != memory,
                      resource("-masterl", mem(master_memory)),
                      "") %>% character_1_0(),
-      dplyr::if_else(slot > 1L && ljob,
+      dplyr::if_else(slot > 1L && master_memory != memory && ljob,
                     resource("-masterl", "ljob"),
                     "") %>% character_1_0(),
-      dplyr::if_else(slot > 1L && no_rerun,
+      dplyr::if_else(slot > 1L && master_memory != memory && no_rerun,
                      resource("-masterq", "'!mjobs_rerun.q'"),
                      "") %>% character_1_0(),
-      dplyr::if_else(slot > 1L && lmem,
+      dplyr::if_else(slot > 1L && master_memory != memory && lmem,
                      resource("-masterl", "lmem"),
                      "") %>% character_1_0(),
       sep = "\n"
@@ -218,6 +218,7 @@ grov_env <- function(){
 }
 
 convert_to_array <- function(x) {
+  x[is.na(x)] <- "" #escape NA in order not to return NA
   stringr::str_c("[", 1:length(x), ']="', x, '"', collapse = " ")
 }
 
@@ -228,7 +229,7 @@ is_bash_name <- function(x) {
 }
 
 #' convert lists, vectors, tibbles into \emph{bash-array}
-#' @description Vectors or each column of tibbles will be interpretted as a bash-array when your output is read by bash.
+#' @description Vectors or each column of tibbles will be interpretted as a bash-array when your output is read by bash. NA will be changed to "".
 #' @param ... Lists, vectors, or tibbles. Elements with the same name will be overwritten by the last one.
 #' @param option An option for declare function of bash. This argument is used for all arguments.
 #' @export

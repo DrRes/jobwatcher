@@ -12,5 +12,5 @@ as_bash_array(..., option = "-a")
 \item{option}{An option for declare function of bash. This argument is used for all arguments.}
 }
 \description{
-Vectors or each column of tibbles will be interpretted as a bash-array when your output is read by bash.
+Vectors or each column of tibbles will be interpretted as a bash-array when your output is read by bash. NA will be changed to "".
 }

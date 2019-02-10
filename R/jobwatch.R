@@ -110,7 +110,7 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", modify
       if (identical(dplyr::setdiff(task, rep$taskid), character(0))) {
         if (sum(rep_filt$exit_status, rep_filt$failed) == 0) {
           if (debug) as.data.frame(rep) %>% print()#debug
-          message(done("'", crayon::cyan(path), "' has been done.")) #message->stderr, inform->stdout
+          message(paste0("'", path, "' has been done.")) #message->stderr, inform->stdout
           if (verbose) rlang::inform(done("'", crayon::cyan(path), "' has been done.")) #message and print
           break
         }else{
@@ -135,18 +135,18 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", modify
             }
             c(ID, path, time) %<-% qsub(path, qsub_args_new, qrecall)
             if (modify_req) {
-              rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path), "\nadditional args: ", qsub_args_new))
+              message(paste0("#", counter, " resub: ", path, "\nadditional args: ", qsub_args_new))
             }else{
-              rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path)))
+              message(paste0("#", counter, " resub: ", path))
             }
             ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
             ID_body <- ID_vec[1]
             task <- ID_vec[2:4] %>% seq_int_chr()
             if (verbose) {
               if (modify_req) {
-                todo("#", counter, " resub: ", crayon::cyan(path), "\nadditional args: ", qsub_args_new)
+                rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path), "\nadditional args: ", qsub_args_new))
               }else{
-                todo("#", counter, " resub: ", crayon::cyan(path))
+                rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path)))
               }
               qsub_verbose(ID_body, task, time)
               }
@@ -186,14 +186,12 @@ qsub_function <- function(...,
   NAME = FIRST_LINE = PARALLEL = ARRAYJOB = DIRECTORY = USE_BASH_PROFILE = OTHER_REQ = SCRIPT_PATH = SCRIPT_DIR = RECURSIVE = ADD_TIME = QSUB_ARGS = NA_character_
   c(NAME, FIRST_LINE, PARALLEL, ARRAYJOB, DIRECTORY, USE_BASH_PROFILE, OTHER_REQ, SCRIPT_PATH, SCRIPT_DIR, RECURSIVE, ADD_TIME, QSUB_ARGS) %<-% 
     list(name, first_line, parallel, arrayjob, directory, use_bash_profile, other_req, script_path, script_dir, recursive, add_time, qsub_args)
-  c(
-    list(...),
-    list(script_path = SCRIPT_PATH, script_dir = SCRIPT_DIR, name = NAME, first_line = FIRST_LINE, parallel = PARALLEL, arrayjob = ARRAYJOB, directory = DIRECTORY, 
-         use_bash_profile = USE_BASH_PROFILE, other_req = OTHER_REQ, recursive = RECURSIVE, add_time = ADD_TIME, qsub_args = QSUB_ARGS)
-  ) -> args_list
-  
+
   function(dammy_arg){
-    do.call(write_and_qsub, args_list) -> jobs
+    write_and_qsub(...,
+                   script_path = SCRIPT_PATH, script_dir = SCRIPT_DIR, name = NAME, first_line = FIRST_LINE, parallel = PARALLEL, arrayjob = ARRAYJOB, directory = DIRECTORY, 
+                   use_bash_profile = USE_BASH_PROFILE, other_req = OTHER_REQ, recursive = RECURSIVE, add_time = ADD_TIME, qsub_args = QSUB_ARGS
+                   ) -> jobs
     do.call(jobwatch, c(list(x = jobs), jobwatch_args))
   }
 }
