@@ -182,21 +182,21 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
     }
 
     stringr::str_c(
-      resource("-pe", env, slot),
+      resource("-pe", env, stringr::str_c(slot, collapse = "-")),
       resource("-l", mem(memory)),
       dplyr::if_else(ljob, resource("-l", "ljob"), "") %>% character_1_0(),
       dplyr::if_else(no_rerun, resource("-q", "'!mjobs_rerun.q'"), "") %>% character_1_0(),
       dplyr::if_else(lmem, resource("-l", "lmem"), "") %>% character_1_0(),
-      dplyr::if_else(slot > 1L && master_memory != memory,
+      dplyr::if_else(max_slot > 1L && master_memory != memory,
                      resource("-masterl", mem(master_memory)),
                      "") %>% character_1_0(),
-      dplyr::if_else(slot > 1L && master_memory != memory && ljob,
+      dplyr::if_else(max_slot > 1L && master_memory != memory && ljob,
                     resource("-masterl", "ljob"),
                     "") %>% character_1_0(),
-      dplyr::if_else(slot > 1L && master_memory != memory && no_rerun,
+      dplyr::if_else(max_slot > 1L && master_memory != memory && no_rerun,
                      resource("-masterq", "'!mjobs_rerun.q'"),
                      "") %>% character_1_0(),
-      dplyr::if_else(slot > 1L && master_memory != memory && lmem,
+      dplyr::if_else(max_slot > 1L && master_memory != memory && lmem,
                      resource("-masterl", "lmem"),
                      "") %>% character_1_0(),
       sep = "\n"
