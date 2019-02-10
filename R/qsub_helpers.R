@@ -85,7 +85,7 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
   if (env %in% c("mpi", "mpi-fillup")) {
     assertthat::assert_that(length(slot) %in% c(1, 2))
     if (length(slot) == 1) slot <- rep(slot, 2)
-    dplyr::if_else(env == "mpi", 1, slot[2]) -> max_slot
+    dplyr::if_else(env == "mpi", 1L, vctrs::vec_cast(slot[2], integer())) -> max_slot
   }else{
     assertthat::assert_that(length(slot) == 1)
     slot -> max_slot
@@ -108,7 +108,7 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
     dplyr::filter(!!dplyr::sym("ENV") == env) -> df
   df$SLOT_NODE -> slot_node
   df$BASE_SLOT -> base_slot
-  assertthat::assert_that(slot %% base_slot == 0)
+  assertthat::assert_that(slot[1] %% base_slot == 0)
   slot_node * memory + dplyr::if_else(slot_node > 1L, master_memory - memory, 0) -> total_memory
   if (stringr::str_detect(env, "^mpi")) max(total_memory, slot_node * memory) -> total_memory
 
