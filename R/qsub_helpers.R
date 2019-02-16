@@ -136,7 +136,7 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
       max_memory <- 1000L
       if (env != "def_slot") rlang::abort("env must be def_slot when gpu que is specified.", "requirement_resource_error")
     }else if (special_que == "groupname") {
-      max_slot <- 12L
+      max_slot <- 24L
       max_memory <- 128L
       system("id", intern = TRUE) -> id
       assertthat::assert_that(id$status == 0)
@@ -156,10 +156,10 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
       sep = "\n"
     ) -> result
   }else{
-    if (slot_node > 24L) {
+    if (slot_node > 39L) {
       rlang::abort("number of slots must be equal to or less than 24 per node.", "requirement_resource_error")
     }
-    if (slot_node > 12L) {
+    if (slot_node > 24L) {
       if (ljob) {
         ljob <- FALSE
         rlang::warn("Large number of slots request. lmem option was selected instead of ljob option. Running time is allowed up to 2 weeks.", "requirement_resource_warning")
