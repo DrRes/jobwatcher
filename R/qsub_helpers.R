@@ -38,19 +38,15 @@ character_1_0 <- function(x){
 arrayjob_option <- function(n = 1L, tc = 100L, stepsize = NULL) {
   assertthat::assert_that(length(n) == 1)
   n <- vctrs::vec_cast(n, integer()) %>% as.character()
-  if (n == "1") {
-    ""
-  }else{
-    assertthat::assert_that(length(tc) == 1)
-    tc <- vctrs::vec_cast(tc, integer()) %>% as.character()
-    one2n <- paste0("1-", n)
-    if (!is.null(stepsize)) {
-      assertthat::assert_that(length(stepsize) == 1)
-      stepsize <- vctrs::vec_cast(stepsize, integer())
-      one2n <- paste0(one2n, ":", stepsize)
-    }
-    resource("-t", one2n, "-tc", tc)
+  assertthat::assert_that(length(tc) == 1)
+  tc <- vctrs::vec_cast(tc, integer()) %>% as.character()
+  one2n <- paste0("1-", n)
+  if (!is.null(stepsize)) {
+    assertthat::assert_that(length(stepsize) == 1)
+    stepsize <- vctrs::vec_cast(stepsize, integer())
+    one2n <- paste0(one2n, ":", stepsize)
   }
+  resource("-t", one2n, "-tc", tc)
 }
 
 ## @usage parallel_option(env = c("def_slot", "mpi", "mpi-fillup", "mpi_4", "mpi_8", "mpi_16", "mpi_24"), slot = 1L, memory = 5.3, master_memory = NULL, ljob = FALSE, no_rerun = TRUE, special_que = c(NULL, "cp", "docker", "knl", "gpu", "groupname"), docker_images = NA_character_)
