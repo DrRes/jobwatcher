@@ -82,10 +82,20 @@ save_and_qsub <- function(x, script_path, script_dir, recursive = FALSE,
   path <- dplyr::if_else(is.na(script_dir), script_path, fs::path(script_dir, script_path) %>% as.character()) %>% fs::path_abs()
   c(path, time) %<-% write_job(x, path, recursive, add_time)
   assertthat::assert_that(is.character(qsub_args))
-  qsubres <- system(paste0("qsub ", path, " ", qsub_args), intern = TRUE)
+  qsubres <- try_system(paste0("qsub ", path, " ", qsub_args), intern = TRUE)
   message(qsubres)
   stringr::str_split(qsubres, " ")[[1]][3] -> ID
   invisible(list(ID, path, time))
+}
+
+try_system <- function(x, n_try = 5L) {
+  stopifnot(n_try > 0L)
+  res <- try(system(x, intern = TRUE))
+  if (class(res) == "try-error") {
+    try_system(x, n_try - 1L)
+  } else {
+    return(res)
+  }
 }
 
 #' write and \emph{qsub}
