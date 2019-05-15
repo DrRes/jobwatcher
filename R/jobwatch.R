@@ -1,8 +1,9 @@
 vacant_tbl <- function(colname){
   matrix(nrow = 0, ncol = length(colname)) %>%
-    tibble::as_tibble() %>%
-    dplyr::mutate_all(as.character) %>%
-    `colnames<-`(colname)
+    as.data.frame() %>% 
+    `colnames<-`(colname) %>% 
+    tibble::as_tibble(.name_repair = "minimal") %>%
+    dplyr::mutate_all(as.character)
 }
 
 try_xml_to_tbl <- function(xml){
@@ -15,7 +16,8 @@ try_xml_to_tbl <- function(xml){
   vacant_result <- vacant_tbl(tbl_colnames)
   tryCatch(
     {
-      xml %>% XML::xmlToDataFrame(stringsAsFactors = F) %>% dplyr::as_tibble(.name_repair = "minimal") -> tbl
+      xml %>% XML::xmlToDataFrame(stringsAsFactors = F) -> xml_df
+      dplyr::as_tibble(xml_df, .name_repair = "minimal") -> tbl
       dplyr::setdiff(tbl_colnames, colnames(tbl)) -> missing_colnames
       purrr::reduce(missing_colnames, ~ dplyr::mutate(.x, !!.y := NA_character_), .init = tbl) -> tbl
       tbl %>% dplyr::select(!!!tbl_colnames)
