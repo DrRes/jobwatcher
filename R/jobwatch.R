@@ -15,7 +15,7 @@ try_xml_to_tbl <- function(xml){
   vacant_result <- vacant_tbl(tbl_colnames)
   tryCatch(
     {
-      xml %>% XML::xmlToDataFrame(stringsAsFactors = F) %>% tibble::as_tibble() -> tbl
+      xml %>% XML::xmlToDataFrame(stringsAsFactors = F) %>% dplyr::as_tibble(.name_repair = "minimal") -> tbl
       dplyr::setdiff(tbl_colnames, colnames(tbl)) -> missing_colnames
       purrr::reduce(missing_colnames, ~ dplyr::mutate(.x, !!.y := NA_character_), .init = tbl) -> tbl
       tbl %>% dplyr::select(!!!tbl_colnames)
