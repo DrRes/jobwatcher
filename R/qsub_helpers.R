@@ -59,7 +59,7 @@ arrayjob_option <- function(n = 1L, tc = 100L, stepsize = NULL) {
 #' @param master_memory A double (option). Memory requirement for the master que. If \emph{slot} is 1 or \emph{master_memory} is equal to \emph{memory}, this argument will be ignored.
 #' @param ljob A logical. Whether need to run more than 2 days. if you require more than 128Gb in total, this option is automatically set as FALSE.
 #' @param no_rerun A logical. Whether allow to run on rerun ques.
-#' @param special_que A character (option). Choose one of "cp", "docker", "knl", "gpu", "\emph{groupname}". If specified, ljob option will be ignored.
+#' @param special_que A character (option). Choose one of "cp", "docker", "knl", "gpu", "\emph{groupname}", "exclusive"(equivalent to groupname). If specified, ljob option will be ignored.
 #' @param docker_images A character (option). Valid only if special_que == "docker".
 #' @examples
 #' parallel_option(slot = 4L, memory = 10, master_memory = 5, ljob = TRUE)
@@ -69,7 +69,7 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
                  BASE_SLOT = c(1L, 1L, 1L, 4L, 8L, 16L, 24L)) -> resource_df
   if (!is.null(special_que)) {
     #assertthat::assert_that(length(special_que) == 1)
-    assertthat::assert_that(special_que %in% c("cp", "docker", "knl", "gpu", "groupname"))
+    assertthat::assert_that(special_que %in% c("cp", "docker", "knl", "gpu", "groupname", "exclusive"))
     if (special_que == "docker") {
       #assertthat::assert_that(length(docker_images) == 1)
       assertthat::assert_that(!is.na(docker_images))
@@ -131,17 +131,18 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
       max_slot <- Inf #FIXME
       max_memory <- 1000L
       if (env != "def_slot") rlang::abort("env must be def_slot when gpu que is specified.", "requirement_resource_error")
-    }else if (special_que == "groupname") {
+    }else if (special_que %in% c("groupname", "exclusive")) {
       max_slot <- 24L
       max_memory <- 128L
-      system("id", intern = TRUE) -> id
-      assertthat::assert_that(id$status == 0)
-      stringr::str_split(id$stdout, ("\\)|\\("))[[1]][4] %>% paste0(".q") -> groupque
-      special_resource <- resource("-q", groupque)
+      special_que <- "exclusive"
+      # system("id", intern = TRUE) -> id
+      # assertthat::assert_that(id$status == 0)
+      # stringr::str_split(id$stdout, ("\\)|\\("))[[1]][4] %>% paste0(".q") -> groupque
+      # special_resource <- resource("-q", groupque)
     }
     if (slot_node > max_slot) rlang::abort("Large number of slot request.", "requirement_resource_error")
     if (total_memory > max_memory) rlang::abort("Large memory request.", "requirement_resource_error")
-    if (special_que != "groupname") special_resource <- resource("-l", special_que)
+    special_resource <- resource("-l", special_que)
     stringr::str_c(
       resource("-pe", env, slot),
       special_resource,

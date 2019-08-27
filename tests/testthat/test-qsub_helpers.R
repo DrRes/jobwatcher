@@ -21,7 +21,7 @@ test_that("parallel_option", {
                "#$ -pe def_slot 1\n#$ -l s_vmem=5.3G,mem_req=5.3G\n#$ -q '!mjobs_rerun.q'")
   expect_equal(parallel_option(slot = 2L, no_rerun = FALSE),
                "#$ -pe def_slot 2\n#$ -l s_vmem=5.3G,mem_req=5.3G")
-  expect_error(parallel_option(slot = 25L))
+  expect_error(parallel_option(slot = 41L))
   expect_error(parallel_option(slot = 12L, memory = 200))
   expect_error(parallel_option(slot = 12L, memory = 10, master_memory = 1990))
   expect_error(parallel_option(env = "mpi_4", slot = 16, memory = 600))
