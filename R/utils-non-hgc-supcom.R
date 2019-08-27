@@ -1,20 +1,20 @@
 # utils for executing in non-HGC supcom environment
 get_jobwatcher_mode <- function() {
-  jobwatcher_mode <- getOption(".jobwatcher_mode")
+  jobwatcher_mode <- getOption("jobwatcher.mode")
   if (is.null(jobwatcher_mode) || is.na(jobwatcher_mode) || !jobwatcher_mode %in% c("not_uge", "uge", "hgc")) {
     if (all(check_commands_exist(c("qrecall", "qreport")))) jobwatcher_mode <- "hgc"
     else if (all(check_commands_exist(c("qsub", "qdel", "qstat", "qacct")))) jobwatcher_mode <- "uge"
     else jobwatcher_mode <- "not_uge"
-    options(.jobwatcher_mode = jobwatcher_mode)
+    options(jobwatcher.mode = jobwatcher_mode)
   }
   jobwatcher_mode
 }
 
 warn_if_first_time_qsub <- function() {
-  qsub_history <- getOption(".jobwatcher_qsub_history")
+  qsub_history <- getOption("jobwatcher.qsub_history")
   if (is.null(qsub_history) || is.na(qsub_history) || !qsub_history) {
     rlang::warn("This is not HGC supcom environment. 'qsub' command is disabled. (This warning is appeared only once.)")
-    options(.jobwatcher_qsub_history = TRUE)
+    options(jobwatcher.qsub_history = TRUE)
   }
   invisible(TRUE)
 }

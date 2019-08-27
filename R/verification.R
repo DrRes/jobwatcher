@@ -28,10 +28,18 @@ assign_oneof_default_arg_chr <- function(arg_vec) {
   default_args <- formals(sys.function(sys.parent()))
   arg_vec <- arg_vec[arg_vec %in% names(default_args)]
   purrr::walk(arg_vec, ~ {
-    true_arg <- .as_character(eval(as.name(..1), envir = sys.frame(1L)))[1L]
+    true_arg <- .as_character(eval(as.name(..1), envir = parent.frame()))[1L]
     verify_in(true_arg, eval(default_args[[..1]]))
-    assign(..1, true_arg, envir = sys.frame(1L))
+    assign(..1, true_arg, envir = parent.frame())
   })
   invisible(arg_vec)
 }
 
+# s <- function(a = 1, b = c(1,2,3)) {
+#   assign_oneof_default_arg_chr(c("a", "b"))
+#   print(b)
+# }
+# 
+# ss <- function() {a <- function() 1 ;print(ls(envir = parent.frame(1L)))}
+# sss <- function() {b = function() 2;ss()}  
+# ssss <- function() {d = function() 3;sss()} 
