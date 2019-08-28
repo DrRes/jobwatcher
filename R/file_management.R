@@ -67,7 +67,7 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
         "touch {file_helloworld}",
         script_path = "makefile",
         script_dir = "{dir_script}",
-        directory = "{dir_opt}"
+        directory = "dir_opt"
       )
       pl_hello <- qsub_function(
         as_bash_array(Hello = Hello),
