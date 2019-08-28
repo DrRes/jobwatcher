@@ -20,7 +20,7 @@ send_command <- function(command, ID, ..., .hgc_mode = TRUE) {
           ))
       }
       
-      if (res == "") {
+      if (is.null(res) || length(res) == 0L || (length(res) == 1L && res == "")) {
         res <- 
           suppressWarnings(system(
             stringr::str_c(command, "-N", ID, dots_chr, sep = " "),
@@ -53,9 +53,8 @@ try_xml_to_tbl_internal <- function(xml, command) {
   if (command == "qreport") {
     dplyr::as_tibble(XML::xmlToDataFrame(xml, stringsAsFactors = F), .name_repair = "minimal")
   } else if (command == "qstat") {
-    # # Disabled. see txt_to_tbl.
-    # job_list <- XML::xmlToList(xml)$queue_info
-    # purrr::map_dfr(job_list, ~ dplyr::as_tibble(purrr::compact(.x), .name_repair = "minimal"))
+    job_list <- XML::xmlToList(xml)$queue_info
+    purrr::map_dfr(job_list, ~ dplyr::as_tibble(purrr::compact(.x), .name_repair = "minimal"))
   }
 }
 
@@ -206,6 +205,7 @@ qstat <- function(ID = NA, user = NA, type = c("tibble", "xml", "txt")) { #TODO 
   if (type == "xml") res <- qstat_xml_txt(ID = NA, user = NA, "xml")
   else {
     res <- qstat_xml_txt(ID = NA, user = NA, "txt")
-    if (type == "tibble") res <- try_xml_to_tbl(txt_to_tbl(res), "qstat")
-    }
+    if (type == "tibble") res <- try_xml_to_tbl(res, "qstat")
+  }
+  res
 }

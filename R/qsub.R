@@ -1,4 +1,5 @@
 #' make a file suitable for \emph{qsub}
+#' 
 #' @param ... Your codes (default: \emph{bash} codes). Each argument should be a character vector. Multiple arguments and multiple elements will be separated with a line break.
 #' @param name A character
 #' @param first_line A character. It is written in the first line.
@@ -8,6 +9,7 @@
 #' @param use_bash_profile A logical. Whether \emph{source ~/.bash_profile} or not.
 #' @param other_req A character. Other requirements for \emph{qsub}
 #' @seealso \url{https://supcom.hgc.jp/internal/mediawiki/qsub_%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89}
+#' @return qsub script as a character. In order to write this in a file, use \code{write} or \code{\link{write_qsubfile}}.
 #' @export
 make_qsubfile <- function(...,
                           name = NA_character_,
@@ -33,21 +35,28 @@ make_qsubfile <- function(...,
     sep = "\n")
 }
 
-# @return invisible. A list of the path where you actually write your file, and the time you execute this function.
+#' write a qsub file
+#' 
+#' @param x Your qsub script.
+#' @param path A character. The path to write a file.
+#' @param recursive A logical. Whether make parent directory recursively when it does NOT exist.
+#' @param add_time A logical. Whether add the time you execute this function to path for unique naming.
+#' @return invisible. The path where you actually write your file.
+#' @export
 write_qsubfile <- function(x, path, recursive, add_time) {
   assertthat::assert_that(is.character(x))
   verify_path(path, recursive)
-  Sys.time() %>% format("%Y%m%d%H%M") -> time
+  time <- format(Sys.time(), "%Y%m%d%H%M")
   if (add_time) {
     ext <- fs::path_ext(path)
-    if(ext == ""){
-      stringr::str_c(fs::path_ext_remove(path), "_", time) -> path
+    if (ext == "") {
+      path <- stringr::str_c(fs::path_ext_remove(path), "_", time)
     }else{
-      stringr::str_c(fs::path_ext_remove(path), "_", time, ".", fs::path_ext(path)) -> path
+      path <- stringr::str_c(fs::path_ext_remove(path), "_", time, ".", fs::path_ext(path))
     }
   }
   write(x, path, append = F)
-  invisible(list(path, time))
+  invisible(path)
 }
 
 

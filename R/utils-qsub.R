@@ -7,7 +7,7 @@ dots_parser <- function(..., sep_collapse = "\n") {
 }
 
 try_system <- function(x, trial_times = 5L) {
-  stopifnot(trial_times > 0L)
+  if (trial_times <= 0L) rlang::abort(paste0("Error occurred in ", x), "command_error")
   res <- try(system(x, intern = TRUE))
   if (class(res) == "try-error") {
     try_system(x, trial_times - 1L)

@@ -1,5 +1,19 @@
-# Deplicated. This is an alias of \code{\link{write_qsubfile}}.
-write_job <- write_qsubfile
+# Deplicated. This is similar to \code{\link{write_qsubfile}}. (slightly different in "return".
+write_job <- function(x, path, recursive, add_time) {
+  assertthat::assert_that(is.character(x))
+  verify_path(path, recursive)
+  time <- format(Sys.time(), "%Y%m%d%H%M")
+  if (add_time) {
+    ext <- fs::path_ext(path)
+    if (ext == "") {
+      path <- stringr::str_c(fs::path_ext_remove(path), "_", time)
+    }else{
+      path <- stringr::str_c(fs::path_ext_remove(path), "_", time, ".", fs::path_ext(path))
+    }
+  }
+  write(x, path, append = F)
+  invisible(list(path, time))
+}
 
 #' save and \emph{qsub}
 #' 
@@ -7,7 +21,7 @@ write_job <- write_qsubfile
 #'
 #' @param x A character. contents of file.
 #' @param script_path A character. The path to write a file.
-#' @param script_dir A character. It will concatenated with file_path..
+#' @param script_dir A character. It will concatenated with file_path.
 #' @param recursive A logical. Whether make parent directory recursively when it does NOT exist.
 #' @param add_time A logical. Whether add the time you execute this function to path for unique naming.
 #' @param qsub_args Additional arguments for \emph{qsub}.
@@ -18,10 +32,10 @@ save_and_qsub <- function(x, script_path, script_dir, recursive = FALSE,
                           add_time = TRUE, qsub_args = "") {
   time <- character()
   path <- dplyr::if_else(is.na(script_dir), script_path, as.character(fs::path(script_dir, script_path))) %>% fs::path_abs()
-  c(path, time) %<-% write_job(x, path, recursive, add_time)
+  c(path, time) %<-% write_qsubfile(x, path, recursive, add_time)
   qsubres <- try_system(paste0("qsub ", path, " ", qsub_args))
   rlang::inform(qsubres)
-  stringr::str_split(qsubres, " ")[[1]][3] -> ID
+  ID <- stringr::str_split(qsubres, " ")[[1]][3]
   invisible(list(ID, path, time))
 }
 
@@ -84,7 +98,7 @@ write_and_qrecall <- function(..., path = fs::path_home(), log_path = NULL, recu
   qrec <- system(paste0("qrecall -file ", path, arg_stdout), intern = TRUE)
   #cannot use process::run for unknown reasons
   message(qrec)
-  stringr::str_split(qrec, " ")[[1]][3] -> ID
+  ID <- stringr::str_split(qrec, " ")[[1]][3]
   invisible(list(ID, path, time))
 }
 

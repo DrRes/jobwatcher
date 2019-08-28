@@ -1,5 +1,3 @@
-
-
 #' watch a \emph{qsub}bed job by using \emph{qreport}
 #'
 #' @param ID Your job ID or job name
@@ -27,7 +25,8 @@ watch <- function(ID, path = NA, time = NA,
   verify_scalar(ID, path, time)
   verify_no_na(ID)
   c(ID, path, time) %<-% .map_as_character(ID, path, time)
-  assertthat::assert_that(fs::file_exists(path))
+  if(max_repeat > 0L) assertthat::assert_that(fs::file_exists(path))
+  if (is.na(path)) path <- "<Your job>"
   assertthat::assert_that(is.na(time) || stringr::str_length(time) == 12)
   assign_oneof_default_arg_chr("give_up")
   
@@ -122,12 +121,26 @@ watch <- function(ID, path = NA, time = NA,
 
 #' make function for qsub a job and watch progress
 #' 
-#' @description short hand of creating a function 
-#'   doing fixed \code{\link{write_and_qsub}} and \code{\link{jobwatch}}
-#'   regardless arguments of created function.
+#' @description Short hand of creating a function 
+#'   doing \code{\link{qsub}} with \code{watch = TRUE}. 
+#'   The created function has a dammy argument which has no effect.
 #'
-#' @inheritParams write_and_qsub
-#' @param jobwatch_args A list. Elements are passed to \code{\link{jobwatch}}
+#' @param ... Your codes (default: \emph{bash} codes). Each argument should be a character vector. Multiple arguments and multiple elements will be separated with a line break.
+#' @param script_path A character. The path to write a file.
+#' @param script_dir A character. It will concatenated with file_path..
+#' @param name A character
+#' @param first_line A character. It is written in the first line.
+#' @param parallel A character
+#' @param arrayjob A character
+#' @param directory A character
+#' @param use_bash_profile A logical. Whether \emph{source ~/.bash_profile} or not.
+#' @param other_req A character. Other requirements for \emph{qsub}
+#' @param recursive A logical. Whether make parent directory recursively when it does NOT exist.
+#' @param add_time A logical. Whether add the time you execute this function to path for unique naming.
+#' @param qsub_args Additional arguments for \emph{qsub}.
+#' @param jobwatch_args A list. Elements are passed to \code{\link{watch}}
+#' @seealso \url{https://supcom.hgc.jp/internal/mediawiki/qsub_%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89}
+#' @return A function which has a dammy argument
 #' @export
 qsub_function <- function(...,
                           script_path,
@@ -143,19 +156,10 @@ qsub_function <- function(...,
                           add_time = TRUE,
                           qsub_args = "", 
                           jobwatch_args = list()){
-  NAME = FIRST_LINE = PARALLEL = ARRAYJOB = DIRECTORY = USE_BASH_PROFILE = OTHER_REQ = SCRIPT_PATH = SCRIPT_DIR = RECURSIVE = ADD_TIME = QSUB_ARGS = NA_character_
-  c(NAME, FIRST_LINE, PARALLEL, ARRAYJOB, DIRECTORY, USE_BASH_PROFILE, OTHER_REQ, SCRIPT_PATH, SCRIPT_DIR, RECURSIVE, ADD_TIME, QSUB_ARGS) %<-% 
-    list(name, first_line, parallel, arrayjob, directory, use_bash_profile, other_req, script_path, script_dir, recursive, add_time, qsub_args)
-
+  force(list(name, first_line, parallel, arrayjob, directory, use_bash_profile, other_req, script_path, script_dir, recursive, add_time, qsub_args))
   function(dammy_arg){
-    write_and_qsub(...,
-                   script_path = SCRIPT_PATH, script_dir = SCRIPT_DIR, name = NAME, first_line = FIRST_LINE, parallel = PARALLEL, arrayjob = ARRAYJOB, directory = DIRECTORY, 
-                   use_bash_profile = USE_BASH_PROFILE, other_req = OTHER_REQ, recursive = RECURSIVE, add_time = ADD_TIME, qsub_args = QSUB_ARGS
-                   ) -> jobs
-    do.call(jobwatch, c(list(x = jobs), jobwatch_args))
+    qsubfile <- make_qsubfile(..., name = name, first_line = first_line, parallel = parallel, arrayjob = arrayjob, directory = directory, use_bash_profile = use_bash_profile, other_req = other_req)
+    path <- write_qsubfile(x = qsubfile, path = script_path, recursive = recursive, add_time = add_time)
+    do.call(qsub, c(list(path = path, args = qsub_args, watch = TRUE), jobwatch_args))
   }
 }
-
-# qrecall files and watch progress
-# @export
-#qrecall_watch <- purrr::compose(purrr::partial(jobwatch, max_repeat = 1L, qrecall = TRUE), write_and_qrecall)
