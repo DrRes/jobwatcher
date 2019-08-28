@@ -65,7 +65,7 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
       dir_opt <- directory_option(out = "{log_output}", err = "{log_output}")
       pl_makefile <- qsub_function(
         "touch {file_helloworld}",
-        script_path = "{makefile}",
+        script_path = "makefile",
         script_dir = "{dir_script}",
         directory = "{dir_opt}"
       )

@@ -3,11 +3,8 @@
 \name{pipe}
 \alias{pipe}
 \alias{\%>\%}
-\alias{\%$\%}
-\alias{\%T>\%}
 \title{Pipe operator}
 \description{
-See \code{magrittr::\link[magrittr]{\%>\%}}, \code{magrittr::\link[magrittr]{\%$\%}},
-and \code{magrittr::\link[magrittr]{\%T>\%}} for details.
+See \code{magrittr::\link[magrittr]{\%>\%}} for details.
 }
 \keyword{internal}

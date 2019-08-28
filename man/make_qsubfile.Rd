@@ -26,6 +26,9 @@ make_qsubfile(..., name = NA_character_, first_line = binbash(),
 
 \item{other_req}{A character. Other requirements for \emph{qsub}}
 }
+\value{
+qsub script as a character. In order to write this in a file, use \code{write} or \code{\link{write_qsubfile}}.
+}
 \description{
 make a file suitable for \emph{qsub}
 }
