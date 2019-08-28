@@ -25,21 +25,21 @@ verify_uge <- function() {
 is_number <- function(x) stringr::str_detect(x, "^[:digit:]+$")
 
 assign_oneof_default_arg_chr <- function(arg_vec) {
-  default_args <- formals(sys.function(sys.parent()))
+  default_args <- print(formals(sys.function(sys.parent())))
   arg_vec <- arg_vec[arg_vec %in% names(default_args)]
-  purrr::walk(arg_vec, ~ {
-    true_arg <- .as_character(eval(as.name(..1), envir = parent.frame()))[1L]
-    verify_in(true_arg, eval(default_args[[..1]]))
-    assign(..1, true_arg, envir = parent.frame())
-  })
+  for (i in seq_along(arg_vec)) {
+    true_arg <- .as_character(print(eval(as.name(arg_vec[i]), envir = parent.frame(1L))))[1L]
+    verify_in(true_arg, eval(default_args[[arg_vec[i]]]))
+    assign(arg_vec[i], true_arg, envir = parent.frame(1L))
+  }
   invisible(arg_vec)
 }
 
-# s <- function(a = 1, b = c(1,2,3)) {
+# .tester0 <- function() print(eval(as.name("a"), envir = parent.frame(1)))
+# .tester1 <- function(a = "1", b = c("1","2","3")) {
 #   assign_oneof_default_arg_chr(c("a", "b"))
-#   print(b)
+#   # .tester0()
 # }
-# 
-# ss <- function() {a <- function() 1 ;print(ls(envir = parent.frame(1L)))}
-# sss <- function() {b = function() 2;ss()}  
-# ssss <- function() {d = function() 3;sss()} 
+# .tester2 <- function(a = 3) .tester1()
+# .tester2_2 <- function(a = 3) .tester1(a = "4", b = "2")
+# .tester3 <- function() .tester2()
