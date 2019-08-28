@@ -4,7 +4,8 @@
 \alias{parallel_option}
 \title{Parallel job requirement}
 \usage{
-parallel_option(env = "def_slot", slot = 1L, memory = 5.3,
+parallel_option(env = c("def_slot", "mpi", "mpi-fillup", "mpi_4",
+  "mpi_8", "mpi_16", "mpi_24"), slot = 1L, memory = 5.3,
   master_memory = NULL, ljob = FALSE, no_rerun = TRUE,
   special_que = NULL, docker_images = NA_character_)
 }

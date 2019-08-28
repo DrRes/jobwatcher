@@ -1,19 +1,25 @@
 p_load_chr <- function(pkg) {
   paste0(
-    dplyr::if_else(base::requireNamespace(pkg, quietly = TRUE),
-                   "",
-                   paste0("if (!requireNamespace('", pkg, "', quietly = TRUE)) install.packages('", pkg, "', )\n")),
+    ifelse(base::requireNamespace(pkg, quietly = TRUE),
+           "",
+           paste0("if (!requireNamespace('", pkg, "', quietly = TRUE)) install.packages('", pkg, "', )\n")
+    ),
     "library('", pkg, "')"
   )
 }
 
 p_load_github_chr <- function(pkg) {
   paste0(
-    dplyr::if_else(base::requireNamespace("remotes", quietly = TRUE),
-                   "", "if (!requireNamespace('remotes', quietly = TRUE)) install.packages('remotes')\n"),
-    dplyr::if_else(base::requireNamespace(pkg, quietly = TRUE),
-                   "",
-                   paste0("if (!requireNamespace('", pkg, "', quietly = TRUE)) remotes::install_github('", pkg, "', )\n")),
+    ifelse(
+      base::requireNamespace("remotes", quietly = TRUE),
+      "",
+      "if (!requireNamespace('remotes', quietly = TRUE)) install.packages('remotes')\n"
+    ),
+    ifelse(
+      base::requireNamespace(pkg, quietly = TRUE),
+      "",
+      paste0("if (!requireNamespace('", pkg, "', quietly = TRUE)) remotes::install_github('", pkg, "', )\n")
+    ),
     "library('", pkg, "')"
   )
 }

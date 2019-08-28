@@ -26,9 +26,9 @@ make_qsubfile <- function(...,
     first_line,
     parallel,
     arrayjob,
-    dplyr::if_else(is.na(name), "", resource("-N", name)) %>% character_1_0(),
+    ifelse(is.na(name), "", resource("-N", name)) %>% character_1_0(),
     directory,
-    dplyr::if_else(use_bash_profile, grov_env(), "") %>% character_1_0(),
+    ifelse(!is.na(use_bash_profile) && use_bash_profile, grov_env(), "") %>% character_1_0(),
     other_req,
     "##########",
     inputs,
@@ -73,9 +73,10 @@ qsub <- function(path, args = NA, watch = FALSE, ...){
   path <- fs::path_abs(path)
   verify_file_exists(path)
   args <- .as_character(args)
+  args <- ifelse(is.na(args) || args == "", "", paste0(" ", args))
   time <- format(Sys.time(), "%Y%m%d%H%M")
   if (get_jobwatcher_mode() %in% c("hgc", "uge")) {
-    qsubres <- system(paste0("qsub ", path, " ", args), intern = TRUE)
+    qsubres <- system(paste0("qsub ", path, args), intern = TRUE)
     rlang::inform(qsubres)
     ID <- stringr::str_split(qsubres, " ")[[1]][3]
     res <- list(ID = ID, path = path, time = time)
@@ -103,13 +104,14 @@ qrecall <- function(path, args = NA, watch = FALSE, ...){
   path <- fs::path_abs(path)
   verify_file_exists(path)
   args <- .as_character(args)
+  args <- ifelse(is.na(args) || args == "", "", paste0(" ", args))
   time <- format(Sys.time(), "%Y%m%d%H%M")
   
   if (get_jobwatcher_mode() != "hgc") {
     rlang::inform("This is not HGC environment. 'qrecall' command will be ignored.")
     res <- list(ID = NA_character_, path = path, time = time)
   } else {
-    qsubres <- system(paste0("qrecall -file ", path, " ", args), intern = TRUE)
+    qsubres <- system(paste0("qrecall -file ", path, args), intern = TRUE)
     rlang::inform(qsubres)
     ID <- stringr::str_split(qsubres, " ")[[1]][3]
     res <- list(ID = ID, path = path, time = time)

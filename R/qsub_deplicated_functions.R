@@ -31,7 +31,7 @@ write_job <- function(x, path, recursive, add_time) {
 save_and_qsub <- function(x, script_path, script_dir, recursive = FALSE,
                           add_time = TRUE, qsub_args = "") {
   time <- character()
-  path <- dplyr::if_else(is.na(script_dir), script_path, as.character(fs::path(script_dir, script_path))) %>% fs::path_abs()
+  path <- ifelse(is.na(script_dir), script_path, fs::path(script_dir, script_path)) %>% fs::path_abs()
   c(path, time) %<-% write_qsubfile(x, path, recursive, add_time)
   qsubres <- try_system(paste0("qsub ", path, " ", qsub_args))
   rlang::inform(qsubres)
@@ -94,7 +94,7 @@ write_and_qrecall <- function(..., path = fs::path_home(), log_path = NULL, recu
   if (fs::is_dir(path)) path <- fs::path(path, "qrecall")
   c(path, time) %<-% write_job(inputs, path, recursive, add_time)
   if (!is.null(log_path)) verify_path(log_path, recursive)
-  arg_stdout <- dplyr::if_else(is.null(log_path), "", paste0(" -o ", log_path))
+  arg_stdout <- ifelse(is.null(log_path), "", paste0(" -o ", log_path))
   qrec <- system(paste0("qrecall -file ", path, arg_stdout), intern = TRUE)
   #cannot use process::run for unknown reasons
   message(qrec)

@@ -95,7 +95,7 @@ watch <- function(ID, path = NA, time = NA,
                 qsub_args_new <- qsub_args 
                }
             }
-            c(ID, path, time) %<-% qsub_qrecall(path, qsub_args_new)
+            c(ID, path, time) %<-% qsub_qrecall(path, qsub_args_new, watch = FALSE)
             if (modify_req) {
               rlang::inform(paste0("#", counter, " resub: ", path, "\nadditional args: ", qsub_args_new))
             }else{

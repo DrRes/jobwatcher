@@ -38,7 +38,7 @@ send_command <- function(command, ID, ..., .hgc_mode = TRUE) {
   res
 }
 
-make_option <- function(x, prefix)  dplyr::if_else(is.na(x), "", paste0(prefix, " ", x))
+make_option <- function(x, prefix)  ifelse(is.na(x), "", paste0(prefix, " ", x))
 
 ####xml2tbl####
 vacant_tbl <- function(colname){
@@ -99,7 +99,7 @@ qreport_xml_txt <- function(ID, begin = NA, user = NA, end = NA, type) {
   begin_option <- make_option(begin, "-b")
   user_option <- make_option(user, "-o")
   end_option <- make_option(end, "-e")
-  xml_option <- dplyr::if_else(type == "xml", "-x", "")
+  xml_option <- ifelse(type == "xml", "-x", "")
   send_command("qreport", ID, user_option, begin_option, end_option, xml_option)
 }
 
@@ -189,7 +189,7 @@ qstat_xml_txt <- function(ID = NA, user = NA, type) {
   verify_scalar(user)
   c(ID, user) %<-% .map_as_character(ID, user)
   user_option <- make_option(user, "-u")
-  xml_option <- dplyr::if_else(type == "xml", "-xml", "")
+  xml_option <- ifelse(type == "xml", "-xml", "")
   send_command("qstat", ID, user_option, xml_option, .hgc_mode = FALSE)
 }
 
