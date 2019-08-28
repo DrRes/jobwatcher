@@ -65,7 +65,7 @@ arrayjob_option <- function(n = 1L, tc = 100L, stepsize = NULL) {
 #' parallel_option(slot = 4L, memory = 10, master_memory = 5, ljob = TRUE)
 #' @export
 parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_memory = NULL, ljob = FALSE, no_rerun = TRUE, special_que = NULL, docker_images = NA_character_){
-  tibble::tibble(ENV = c("def_slot", "mpi", "mpi-fillup", "mpi_4", "mpi_8", "mpi_16", "mpi_24"),
+  dplyr::tibble(ENV = c("def_slot", "mpi", "mpi-fillup", "mpi_4", "mpi_8", "mpi_16", "mpi_24"),
                  BASE_SLOT = c(1L, 1L, 1L, 4L, 8L, 16L, 24L)) -> resource_df
   if (!is.null(special_que)) {
     #assertthat::assert_that(length(special_que) == 1)

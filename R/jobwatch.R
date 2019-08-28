@@ -42,8 +42,8 @@ watch <- function(ID, path = NA, time = NA,
   ID_body = task = NULL
   c(ID_body, task) %<-% parse_id(ID)
   if (verbose) {
-    todo(crayon::green(path))
-    qsub_verbose(ID_body, task, time)
+    rlang::inform(todo(crayon::green(path)))
+    rlang::inform(qsub_verbose(ID_body, task, time))
   }
   
   counter <- 0
@@ -72,16 +72,18 @@ watch <- function(ID, path = NA, time = NA,
       if (identical(dplyr::setdiff(task, rep$taskid), character(0))) {
         if (sum(rep_filt$exit_status, rep_filt$failed) == 0) {
           if (debug) print(as.data.frame(rep))#debug
-          message(paste0("'", path, "' has been done.")) #message->stderr, inform->stdout
-          if (verbose) rlang::inform(done("'", crayon::cyan(path), "' has been done.")) #message and print
+          rlang::inform(done("'", crayon::cyan(path), "' has been done.")) #message->stderr, inform->stdout
+          if (verbose) message(paste0("'", path, "' has been done.")) #message and print
           break
         }else{
           counter <- counter + 1
           if (verbose) {
-            fail("The job with",
-                 "\n ID: ", crayon::cyan(ID_body),
-                 "\n path: ", crayon::cyan(path),
-                 "\nhas failed.")
+            rlang::inform(fail(
+              "The job with",
+              "\n ID: ", crayon::cyan(ID_body),
+              "\n path: ", crayon::cyan(path),
+              "\nhas failed."
+            ))
             as.data.frame(rep) %>% print()
             }#debug
           if (counter < max_repeat) {
@@ -89,16 +91,15 @@ watch <- function(ID, path = NA, time = NA,
             if (modify_req) {
               qsub_args_new <- paste0(qsub_args, " ", rep_filt$recommended_option[1])
               if (qsub_args == "" || length(qsub_args) == 0) {
-                c(path, time) %<-%
-                  write_job(c(readr::read_lines(path), qsub_args_new), path, recursive = TRUE, add_time = TRUE)
+                path <- write_qsubfile(c(readr::read_lines(path), qsub_args_new), path, recursive = TRUE, add_time = TRUE)
                 qsub_args_new <- qsub_args 
                }
             }
             c(ID, path, time) %<-% qsub_qrecall(path, qsub_args_new)
             if (modify_req) {
-              message(paste0("#", counter, " resub: ", path, "\nadditional args: ", qsub_args_new))
+              rlang::inform(paste0("#", counter, " resub: ", path, "\nadditional args: ", qsub_args_new))
             }else{
-              message(paste0("#", counter, " resub: ", path))
+              rlang::inform(paste0("#", counter, " resub: ", path))
             }
             c(ID_body, task) %<-% parse_id(ID)
             if (verbose) {
@@ -107,7 +108,7 @@ watch <- function(ID, path = NA, time = NA,
               }else{
                 rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path)))
               }
-              qsub_verbose(ID_body, task, time)
+              rlang::inform(qsub_verbose(ID_body, task, time))
               }
           }else{
             give_up_fun(paste0("'", path, "' has something to cause error or fail."), "qsub_contents_error")

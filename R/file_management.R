@@ -9,11 +9,11 @@ p_load_chr <- function(pkg) {
 
 p_load_github_chr <- function(pkg) {
   paste0(
-    dplyr::if_else(base::requireNamespace("devtools", quietly = TRUE),
-                   "", "if (!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools')\n"),
+    dplyr::if_else(base::requireNamespace("remotes", quietly = TRUE),
+                   "", "if (!requireNamespace('remotes', quietly = TRUE)) install.packages('remotes')\n"),
     dplyr::if_else(base::requireNamespace(pkg, quietly = TRUE),
                    "",
-                   paste0("if (!requireNamespace('", pkg, "', quietly = TRUE)) devtools::install_github('", pkg, "', )\n")),
+                   paste0("if (!requireNamespace('", pkg, "', quietly = TRUE)) remotes::install_github('", pkg, "', )\n")),
     "library('", pkg, "')"
   )
 }
@@ -21,14 +21,12 @@ p_load_github_chr <- function(pkg) {
 p_ruler <- function(x) paste0("#", x, "=================================")
 
 pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
-  package_load <- p_load_github_chr("jobwatcher")
-
   pipe_dir <-
     fs::path_abs(pipe_dir)
   log_qrecall <-
     fs::path(pipe_dir, "log", "file_management")
-  file_qrecall <-
-    fs::path(pipe_dir, "config", "qrecall.txt")
+  # file_qrecall <-
+  #   fs::path(pipe_dir, "config", "qrecall.txt")
   dir_output <-
     fs::path(pipe_dir, "output")
   dir_script <- 
@@ -41,58 +39,74 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
     fs::path(pipe_dir, "log")
 
   pipe_Rfile <-
-    paste(sep = "\n",
-          p_ruler("attach libraries"),
-          package_load,
-          "",
-          p_ruler("declare variables"),
-          "Hello <- c('H', 'e', 'l', 'l', 'o')",
-          "",
-          p_ruler("parse config"),
-          "#For config yaml files, we recommend fascinating {config} and {rlist} packages to parse them.",
-          "",
-          p_ruler("make directories"),
-          paste0("fs::dir_create('", dir_output, "')"),
-          paste0("fs::dir_create('", log_output, "')"),
-          "",
-          p_ruler("summarize in/out paths"),
-          "your_qrecall_objects <- '/archive/data/hgc1043/snamba/.jobwatch/for_qrecall.txt'",
-          "",
-          p_ruler("intermediate file paths"),
-          "",
-          p_ruler("make functions of qscript files"),
-          paste0("dir_opt <- directory_option(out = '", log_output , "', err = '",log_output , "')"),
-          "",
-          "pl_makefile <-",
-          paste0("  qsub_function('touch ",file_helloworld , "', script_path = 'makefile', script_dir = '", dir_script, "', directory = dir_opt)"),
-          "pl_hello <- qsub_function(",
-          "  as_bash_array(Hello = Hello),",
-          paste0("  'echo ${Hello[$SGE_TASK_ID]} >> ", file_helloworld, "',"),
-          paste0("  script_path = 'hello', script_dir = '", dir_script, "',"),
-          "  arrayjob = arrayjob_option(length(Hello)),",
-          "  directory = dir_opt",
-          ")",
-          paste0("pl_world <- qsub_function('echo World >> ", file_helloworld, "', script_path = 'world', script_dir = '", dir_script, "', directory = dir_opt)"),
-          paste0("pl_helloworld <- qsub_function('echo HelloWorld >> ", file_helloworld, "', script_path = 'helloworld', script_dir = '", dir_script, "', directory = dir_opt)"),
-          "",
-          p_ruler("qrecall"),
-          paste0("job_recall <- write_and_qrecall(your_qrecall_objects, path = '", file_qrecall, "', log_path = '", log_qrecall, "')"),
-          paste0("jobwatch(job_recall, max_repeat = 1L)"),
-          paste0("# if you set max_repeat >= 2, you should set additional arguments: qsub_args = '-o ", log_qrecall, "', qrecall = TRUE"),
-          "",
-          p_ruler("make pipeline"),
-          "drake::drake_plan(",
-          "  makefile = pl_makefile(),",
-          "  hello = pl_hello(makefile),",
-          "  world = pl_world(makefile),",
-          "  helloworld = pl_helloworld(c(hello, world))",
-          ") -> pipeline",
-          "",
-          p_ruler("run pipeline"),
-          paste0("ggsave_pipeline(pipeline, '", fs::path(pipe_dir, "log","pipeline_pre.pdf"), "', width = 30, height = 10)"),
-          paste0("drake::make(pipeline, jobs = ", n_parallel, "L)"),
-          paste0("ggsave_pipeline(pipeline, '", fs::path(pipe_dir, "log","pipeline_post.pdf"), "', width = 30, height = 10)"),
-          "")
+    stringr::str_glue(
+      '
+      {p_ruler("attach libraries")}
+      {p_load_chr("ggplot2")}
+      {p_load_chr("drake")}
+      {p_load_github_chr("jobwatcher")}
+      
+      {p_ruler("declare variables")}
+      Hello <- c("H", "e", "l", "l", "o")
+      
+      {p_ruler("parse config")}
+      # For config yaml files, we recommend fascinating {{config}} and {{rlist}} packages to parse them.
+      
+      {p_ruler("make directories")}
+      fs::dir_create("{dir_output}")
+      fs::dir_create("{log_output}")
+      
+      {p_ruler("summarize in/out paths")}
+      your_qrecall_objects <- "/archive/data/hgc1043/snamba/.jobwatch/for_qrecall.txt"
+      
+      {p_ruler("intermediate file paths")}
+      
+      {p_ruler("make functions of qscript files")}
+      dir_opt <- directory_option(out = "{log_output}", err = "{log_output}")
+      pl_makefile <- qsub_function(
+        "touch {file_helloworld}",
+        script_path = "{makefile}",
+        script_dir = "{dir_script}",
+        directory = "{dir_opt}"
+      )
+      pl_hello <- qsub_function(
+        as_bash_array(Hello = Hello),
+        "echo ${{Hello[$SGE_TASK_ID]}} >> {file_helloworld}",
+        script_path = "hello",
+        script_dir = "{dir_script}",
+        directory = dir_opt
+      )
+      pl_world <- qsub_function(
+        "echo World >> {file_helloworld}",
+        script_path = "world",
+        script_dir = "{dir_script}",
+        directory = dir_opt
+      )
+      pl_helloworld <- qsub_function(
+        "echo HelloWorld >> {file_helloworld}",
+        script_path = "helloworld",
+        script_dir = "{dir_script}",
+        directory = dir_opt
+      )
+      
+      {p_ruler("qrecall")}
+      job_recall <- qrecall(your_qrecall_objects, watch = TRUE, max_repeat = 1L, qsub_args = "-o {log_qrecall}")
+      
+      {p_ruler("make pipeline")}
+      pipeline <- 
+        drake::drake_plan(
+          makefile = pl_makefile(),
+          hello = pl_hello(makefile),
+          world = pl_world(makefile),
+          helloworld = pl_helloworld(c(hello, world))
+        )
+        
+      {p_ruler("run pipeline")}
+      ggsave_pipeline(pipeline, "{fs::path(pipe_dir, "log", "pipeline_pre.pdf")}", width = 30, height = 10)
+      drake::make(pipeline, jobs = {n_parallel}L)
+      ggsave_pipeline(pipeline, "{fs::path(pipe_dir, "log", "pipeline_post.pdf")}", width = 30, height = 10)
+      ', .sep = "\n"
+    )
 
   pipe_qsubfile <-
     make_qsubfile(
@@ -114,7 +128,7 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
 #' @param ... Additional arguments for \code{ggplot2::\link[ggplot2]{ggsave}}
 #' @export
 ggsave_pipeline <- function(plan, path, ...){
-  
+  if (!requireNamespace("ggplot2", quietly = TRUE)) rlang::abort("ggplot2 is required. Please install the package.")
   g <- plan %>% drake::drake_config() %>% drake::drake_ggraph() +
     ggplot2::theme_void() + 
     ggplot2::coord_flip()
@@ -143,17 +157,17 @@ build_pipeline <- function(pipe_name, pipe_dir, n_parallel = 2L, pipe_memory = 3
   }
   if (!dir_exist) {
     fs::dir_create(pipe_dir)
-    done("Directory '", crayon::cyan(pipe_dir), "' has been created.")
+    rlang::inform(done("Directory '", crayon::cyan(pipe_dir), "' has been created."))
   }
   if (make_subdir) {
     purrr::map(list("log", "script", "config"), ~ fs::path(pipe_dir, .x)) %>%
       purrr::walk(fs::dir_create) %>%
-      purrr::walk(~ done("Directory '", crayon::cyan(.x), "' has been created."))
+      purrr::walk(~ rlang::inform(done("Directory '", crayon::cyan(.x), "' has been created.")))
   }
   path_list <- purrr::map(c("sh", "R"), ~ fs::path(pipe_dir, pipe_name, ext = .x))
   purrr::walk2(path_list, file_list, ~ write(.y, .x, append = FALSE)) %>%
-    purrr::walk(~ done("File '", crayon::cyan(.x), "' has been written."))
-  todo("Please edit '", crayon::cyan(path_list[[2]]), "' for your own pipeline.")
-  todo("Then, run ", crayon::green(paste0("qsub ", path_list[[1]])))
+    purrr::walk(~ rlang::inform(done("File '", crayon::cyan(.x), "' has been written.")))
+  rlang::inform(todo("Please edit '", crayon::cyan(path_list[[2]]), "' for your own pipeline."))
+  rlang::inform(todo("Then, run ", crayon::green(paste0("qsub ", path_list[[1]]))))
 }
 

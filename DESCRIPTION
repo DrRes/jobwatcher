@@ -1,6 +1,6 @@
 Package: jobwatcher
 Title: Build pipelines on HGC super-computer
-Version: 0.0.8.9003
+Version: 0.0.8.9004
 Authors@R:
     person(given = "Shinichi",
            family = "Namba",
@@ -11,17 +11,13 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
-    drake,
     XML,
     rlang,
-    magrittr,
-    tibble,
     readr,
     dplyr,
     tidyr,
     purrr,
     stringr,
-    ggplot2,
     fs,
     assertthat,
     zeallot,
@@ -34,4 +30,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
 Suggests:
     testthat,
+    drake,
+    ggplot2
 Language: en-US

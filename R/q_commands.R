@@ -45,7 +45,7 @@ vacant_tbl <- function(colname){
   matrix(nrow = 0, ncol = length(colname)) %>%
     as.data.frame() %>% 
     `colnames<-`(colname) %>% 
-    tibble::as_tibble(.name_repair = "minimal") %>%
+    dplyr::as_tibble(.name_repair = "minimal") %>%
     dplyr::mutate_all(as.character)
 }
 

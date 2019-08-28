@@ -43,7 +43,7 @@ test_that("as_bash_array", {
   expect_equal(is_bash_name("1f"), FALSE)
   expect_equal(is_bash_name("1.d"), FALSE)
   expect_equal(is_bash_name("foo"), TRUE)
-  expect_identical(as_bash_array(tibble::tibble(x = c(1,2), y = c("a", "b")), z = c("x", "y", "z")), 
+  expect_identical(as_bash_array(dplyr::tibble(x = c(1,2), y = c("a", "b")), z = c("x", "y", "z")), 
                             'declare -a x=([1]=\"1\" [2]=\"2\")\ndeclare -a y=([1]=\"a\" [2]=\"b\")\ndeclare -a z=([1]=\"x\" [2]=\"y\" [3]=\"z\")')
   expect_identical(as_bash_array(test_args = test_args), 
                    'declare -a test_args=([1]=\"test\")')
