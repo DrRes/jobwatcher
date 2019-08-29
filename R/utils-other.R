@@ -1,4 +1,4 @@
-###inner object derived from usethis###
+###unexported object derived from usethis###
 todo_bullet <- function() crayon::red(clisymbols::symbol$bullet)
 done_bullet <- function() crayon::green(clisymbols::symbol$tick)
 fail_bullet <- function() crayon::bgRed(clisymbols::symbol$cross)

@@ -1,13 +1,12 @@
 #' Pipe operator
 #'
-#' See \code{magrittr::\link[magrittr]{\%>\%}}, \code{magrittr::\link[magrittr]{\%$\%}},
-#'  and \code{magrittr::\link[magrittr]{\%T>\%}} for details.
+#' See \code{magrittr::\link[magrittr]{\%>\%}} for details.
 #'
 #' @name pipe
 #' @keywords internal
-#' @importFrom magrittr %>% %$% %T>%
-#' @export %>% %$% %T>%
-#' @aliases %>% %$% %T>%
+#' @importFrom dplyr %>%
+#' @export %>%
+#' @aliases %>%
 NULL
 
 #' Multiple assign

@@ -7,10 +7,10 @@
 #' mem(5)
 #' resource("-l", mem(5.3))
 mem <- function(x) {
-  assertthat::assert_that(length(x) == 1)
-  vctrs::vec_cast(x, numeric()) -> x
+  verify_scalar(x)
+  x <- vctrs::vec_cast(x, numeric())
   paste0("s_vmem=", x, "G,mem_req=", x, "G")
-  }
+}
 
 
 #' resource requirement
@@ -23,9 +23,7 @@ resource <- function(...) {
   paste0("#$ ", inputs)
 }
 
-character_1_0 <- function(x){
-  if (x == "") {character(0)} else {x}
-}
+character_1_0 <- function(x) if (x == "") character(0) else x
 
 #' Arrayjob requirement
 #' @description Generates "-t" argument for "qsub".
@@ -36,21 +34,16 @@ character_1_0 <- function(x){
 #' arrayjob_option(10L)
 #' @export
 arrayjob_option <- function(n = 1L, tc = 100L, stepsize = NULL) {
-  assertthat::assert_that(length(n) == 1)
+  verify_scalar(n, tc)
   n <- vctrs::vec_cast(n, integer()) %>% as.character()
-  if (n == "1") {
-    ""
-  }else{
-    assertthat::assert_that(length(tc) == 1)
-    tc <- vctrs::vec_cast(tc, integer()) %>% as.character()
-    one2n <- paste0("1-", n)
-    if (!is.null(stepsize)) {
-      assertthat::assert_that(length(stepsize) == 1)
-      stepsize <- vctrs::vec_cast(stepsize, integer())
-      one2n <- paste0(one2n, ":", stepsize)
-    }
-    resource("-t", one2n, "-tc", tc)
+  tc <- vctrs::vec_cast(tc, integer()) %>% as.character()
+  one2n <- paste0("1-", n)
+  if (!is.null(stepsize)) {
+    verify_scalar(stepsize)
+    stepsize <- vctrs::vec_cast(stepsize, integer())
+    one2n <- paste0(one2n, ":", stepsize)
   }
+  resource("-t", one2n, "-tc", tc)
 }
 
 ## @usage parallel_option(env = c("def_slot", "mpi", "mpi-fillup", "mpi_4", "mpi_8", "mpi_16", "mpi_24"), slot = 1L, memory = 5.3, master_memory = NULL, ljob = FALSE, no_rerun = TRUE, special_que = c(NULL, "cp", "docker", "knl", "gpu", "groupname"), docker_images = NA_character_)
@@ -63,54 +56,61 @@ arrayjob_option <- function(n = 1L, tc = 100L, stepsize = NULL) {
 #' @param master_memory A double (option). Memory requirement for the master que. If \emph{slot} is 1 or \emph{master_memory} is equal to \emph{memory}, this argument will be ignored.
 #' @param ljob A logical. Whether need to run more than 2 days. if you require more than 128Gb in total, this option is automatically set as FALSE.
 #' @param no_rerun A logical. Whether allow to run on rerun ques.
-#' @param special_que A character (option). Choose one of "cp", "docker", "knl", "gpu", "\emph{groupname}". If specified, ljob option will be ignored.
+#' @param special_que A character (option). Choose one of "cp", "docker", "knl", "gpu", "\emph{groupname}", "exclusive"(equivalent to groupname). If specified, ljob option will be ignored.
 #' @param docker_images A character (option). Valid only if special_que == "docker".
 #' @examples
 #' parallel_option(slot = 4L, memory = 10, master_memory = 5, ljob = TRUE)
 #' @export
-parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_memory = NULL, ljob = FALSE, no_rerun = TRUE, special_que = NULL, docker_images = NA_character_){
-  tibble::tibble(ENV = c("def_slot", "mpi", "mpi-fillup", "mpi_4", "mpi_8", "mpi_16", "mpi_24"),
-                 BASE_SLOT = c(1L, 1L, 1L, 4L, 8L, 16L, 24L)) -> resource_df
+parallel_option <- function(env = c("def_slot", "mpi", "mpi-fillup", "mpi_4", "mpi_8", "mpi_16", "mpi_24"),
+                            slot = 1L, memory = 5.3, master_memory = NULL,
+                            ljob = FALSE, no_rerun = TRUE, special_que = NULL, docker_images = NA_character_){
+  resource_df <- 
+    dplyr::tibble(
+      ENV = c("def_slot", "mpi", "mpi-fillup", "mpi_4", "mpi_8", "mpi_16", "mpi_24"),
+      BASE_SLOT = c(1L, 1L, 1L, 4L, 8L, 16L, 24L)
+    )
   if (!is.null(special_que)) {
-    #assertthat::assert_that(length(special_que) == 1)
-    assertthat::assert_that(special_que %in% c("cp", "docker", "knl", "gpu", "groupname"))
+    verify_scalar(special_que)
+    verify_in(special_que, c("cp", "docker", "knl", "gpu", "groupname", "exclusive"))
     if (special_que == "docker") {
-      #assertthat::assert_that(length(docker_images) == 1)
-      assertthat::assert_that(!is.na(docker_images))
-      vctrs::vec_cast(docker_images, character()) -> docker_images
+      verify_scalar(docker_images)
+      verify_no_na(docker_images)
+      docker_images <- .as_character(docker_images)
     }
   }
-  #assertthat::assert_that(length(env) == 1)
-  assertthat::assert_that(env %in% resource_df$ENV)
+  
+  assign_oneof_default_arg_chr("env")
   if (env %in% c("mpi", "mpi-fillup")) {
-    assertthat::assert_that(length(slot) %in% c(1, 2))
+    verify_in(length(slot), c(1, 2))
     if (length(slot) == 1) slot <- rep(slot, 2)
-    dplyr::if_else(env == "mpi", 1L, vctrs::vec_cast(slot[2], integer())) -> max_slot
+    max_slot <- ifelse(env == "mpi", 1L, vctrs::vec_cast(slot[2], integer()))
   }else{
-    assertthat::assert_that(length(slot) == 1)
-    slot -> max_slot
+    verify_scalar(slot)
+    max_slot <- slot
   }
-  vctrs::vec_cast(slot, integer()) -> slot
-  resource_df %>%
-    dplyr::mutate(SLOT_NODE = c(max_slot, max_slot, max_slot, 4L, 8L, 16L, 24L)) -> resource_df
-  assertthat::assert_that(length(memory) == 1)
-  vctrs::vec_cast(memory, numeric()) -> memory
+  slot <- vctrs::vec_cast(slot, integer())
+  resource_df <- 
+    resource_df %>%
+    dplyr::mutate(SLOT_NODE = c(max_slot, max_slot, max_slot, 4L, 8L, 16L, 24L))
+  verify_scalar(memory)
+  memory <- vctrs::vec_cast(memory, numeric())
   if (is.null(master_memory)) {
     master_memory <- memory
   }else{
-    assertthat::assert_that(length(master_memory) == 1)
-    vctrs::vec_cast(master_memory, numeric()) -> master_memory
+    verify_scalar(master_memory)
+    master_memory <- vctrs::vec_cast(master_memory, numeric())
   }
-  vctrs::vec_cast(ljob, logical()) -> ljob
-  vctrs::vec_cast(no_rerun, logical()) -> no_rerun
+  ljob <- vctrs::vec_cast(ljob, logical())
+  no_rerun <- vctrs::vec_cast(no_rerun, logical())
 
-  resource_df %>%
-    dplyr::filter(!!dplyr::sym("ENV") == env) -> df
-  df$SLOT_NODE -> slot_node
-  df$BASE_SLOT -> base_slot
+  df <- 
+    resource_df %>%
+    dplyr::filter(!!dplyr::sym("ENV") == env)
+  slot_node <- df$SLOT_NODE
+  base_slot <- df$BASE_SLOT
   assertthat::assert_that(slot[1] %% base_slot == 0)
-  slot_node * memory + dplyr::if_else(slot_node > 1L, master_memory - memory, 0) -> total_memory
-  if (stringr::str_detect(env, "^mpi")) max(total_memory, slot_node * memory) -> total_memory
+  total_memory <- slot_node * memory + ifelse(slot_node > 1L, master_memory - memory, 0)
+  if (stringr::str_detect(env, "^mpi")) total_memory <- max(total_memory, slot_node * memory)
 
   lmem <- FALSE
   special_resource <- ""
@@ -135,26 +135,28 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
       max_slot <- Inf #FIXME
       max_memory <- 1000L
       if (env != "def_slot") rlang::abort("env must be def_slot when gpu que is specified.", "requirement_resource_error")
-    }else if (special_que == "groupname") {
+    }else if (special_que %in% c("groupname", "exclusive")) {
       max_slot <- 24L
       max_memory <- 128L
-      system("id", intern = TRUE) -> id
-      assertthat::assert_that(id$status == 0)
-      stringr::str_split(id$stdout, ("\\)|\\("))[[1]][4] %>% paste0(".q") -> groupque
-      special_resource <- resource("-q", groupque)
+      special_que <- "exclusive"
+      # system("id", intern = TRUE) -> id
+      # assertthat::assert_that(id$status == 0)
+      # stringr::str_split(id$stdout, ("\\)|\\("))[[1]][4] %>% paste0(".q") -> groupque
+      # special_resource <- resource("-q", groupque)
     }
     if (slot_node > max_slot) rlang::abort("Large number of slot request.", "requirement_resource_error")
     if (total_memory > max_memory) rlang::abort("Large memory request.", "requirement_resource_error")
-    if (special_que != "groupname") special_resource <- resource("-l", special_que)
-    stringr::str_c(
-      resource("-pe", env, slot),
-      special_resource,
-      resource("-l", mem(memory)),
-      dplyr::if_else(slot > 1L && master_memory != memory,
-                     resource("-masterl", mem(master_memory)),
-                     "") %>% character_1_0(),
-      sep = "\n"
-    ) -> result
+    special_resource <- resource("-l", special_que)
+    result <- 
+      stringr::str_c(
+        resource("-pe", env, slot),
+        special_resource,
+        resource("-l", mem(memory)),
+        ifelse(slot > 1L && master_memory != memory,
+               resource("-masterl", mem(master_memory)),
+               "") %>% character_1_0(),
+        sep = "\n"
+      )
   }else{
     if (slot_node > 39L) {
       rlang::abort("number of slots must be equal to or less than 24 per node.", "requirement_resource_error")
@@ -181,49 +183,46 @@ parallel_option <- function(env = "def_slot", slot = 1L, memory = 5.3, master_me
       lmem <- TRUE
     }
 
-    stringr::str_c(
-      resource("-pe", env, stringr::str_c(slot, collapse = "-")),
-      resource("-l", mem(memory)),
-      dplyr::if_else(ljob, resource("-l", "ljob"), "") %>% character_1_0(),
-      dplyr::if_else(no_rerun, resource("-q", "'!mjobs_rerun.q'"), "") %>% character_1_0(),
-      dplyr::if_else(lmem, resource("-l", "lmem"), "") %>% character_1_0(),
-      dplyr::if_else(max_slot > 1L && master_memory != memory,
-                     resource("-masterl", mem(master_memory)),
-                     "") %>% character_1_0(),
-      dplyr::if_else(max_slot > 1L && master_memory != memory && ljob,
-                    resource("-masterl", "ljob"),
-                    "") %>% character_1_0(),
-      dplyr::if_else(max_slot > 1L && master_memory != memory && no_rerun,
-                     resource("-masterq", "'!mjobs_rerun.q'"),
-                     "") %>% character_1_0(),
-      dplyr::if_else(max_slot > 1L && master_memory != memory && lmem,
-                     resource("-masterl", "lmem"),
-                     "") %>% character_1_0(),
-      sep = "\n"
-    ) -> result
+    result <- 
+      stringr::str_c(
+        resource("-pe", env, stringr::str_c(slot, collapse = "-")),
+        resource("-l", mem(memory)),
+        ifelse(!is.na(ljob) && ljob, resource("-l", "ljob"), "") %>% character_1_0(),
+        ifelse(!is.na(no_rerun) && no_rerun, resource("-q", "'!mjobs_rerun.q'"), "") %>% character_1_0(),
+        ifelse(!is.na(lmem) && lmem, resource("-l", "lmem"), "") %>% character_1_0(),
+        ifelse(max_slot > 1L && master_memory != memory,
+               resource("-masterl", mem(master_memory)),
+               "") %>% character_1_0(),
+        ifelse(max_slot > 1L && master_memory != memory && ljob,
+               resource("-masterl", "ljob"),
+               "") %>% character_1_0(),
+        ifelse(max_slot > 1L && master_memory != memory && no_rerun,
+               resource("-masterq", "'!mjobs_rerun.q'"),
+               "") %>% character_1_0(),
+        ifelse(max_slot > 1L && master_memory != memory && lmem,
+               resource("-masterl", "lmem"),
+               "") %>% character_1_0(),
+        sep = "\n"
+      )
   }
   result
 }
 
 #' first spell for bash
 #' @export
-binbash <- function() {
-  "#!/bin/bash\n#$ -S /bin/bash"
-}
+binbash <- function() "#!/bin/bash\n#$ -S /bin/bash"
 
 #' use ~/.bash_profile
 #' @export
-grov_env <- function(){
-  paste0("source ", fs::path_expand("~/.bash_profile"))
-}
+grov_env <- function() paste0("source ", fs::path_expand("~/.bash_profile"))
 
 convert_to_array <- function(x) {
   x[is.na(x)] <- "" #escape NA in order not to return NA
-  stringr::str_c("[", 1:length(x), ']="', x, '"', collapse = " ")
+  stringr::str_c("[", seq_along(x), ']="', x, '"', collapse = " ")
 }
 
 is_bash_name <- function(x) {
-  rlang::is_character(x) &
+  is.character(x) &
     stringr::str_detect(x, "^([:alnum:]|_)+$") &
     !stringr::str_detect(x, "^[:digit:]")
 }
@@ -234,8 +233,8 @@ is_bash_name <- function(x) {
 #' @param option An option for declare function of bash. This argument is used for all arguments.
 #' @export
 as_bash_array <- function(..., option = "-a") {
-  assertthat::assert_that(length(option) == 1)
-  vctrs::vec_cast(option, character()) -> option
+  verify_scalar(option)
+  option <- .as_character(option)
   dots <- rlang::list2(...)
   dots %>%
     rlist::list.flatten() %>%
@@ -251,11 +250,10 @@ as_bash_array <- function(..., option = "-a") {
 #' @param err Path to write stderr (option). If unspecified, \emph{out} argument will be used instead.
 #' @export
 directory_option <- function(cwd = FALSE, out = fs::path_home(), err = NA_character_) {
-  assertthat::assert_that(length(out) == 1)
-  assertthat::assert_that(length(err) == 1)
+  verify_scalar(cwd, out, err)
   if (is.na(err)) err <- out
-  resource("-o", fs::path_abs(out)) -> out
-  resource("-e", fs::path_abs(err)) -> err
-  dplyr::if_else(cwd, "#$ -cwd", "") -> cwd
+  out <- resource("-o", fs::path_abs(out))
+  err <- resource("-e", fs::path_abs(err))
+  cwd <- ifelse(!is.na(cwd) && cwd, "#$ -cwd", "")
   stringr::str_c(cwd, out, err, sep = "\n")
 }

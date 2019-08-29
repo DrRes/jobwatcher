@@ -4,22 +4,25 @@
 \alias{write_and_qrecall}
 \title{write out and \emph{qrecall}}
 \usage{
-write_and_qrecall(..., path = fs::path_home(), log_path = NULL,
-  recursive = FALSE, add_time = TRUE)
+write_and_qrecall(..., path = fs::path_home(),
+  log_path = NA_character_, recursive = FALSE, add_time = TRUE,
+  watch = FALSE)
 }
 \arguments{
 \item{...}{Paths to recall. Each argument should be a character vector. Multiple arguments and multiple elements will be separated with a line break.}
 
-\item{path}{A character. The path to write a file for \emph{qrecall}.}
+\item{path}{A character. The path to write a file for \emph{qrecall}. If path is a directory, prefix 'qrecall' will be added to the file name.}
 
-\item{log_path}{A character (optional). The path to write a stdout of \emph{qrecall}. Default, home directory.}
+\item{log_path}{A character (optional). The path to write a stdout of \emph{qrecall}. Default: home directory.}
 
 \item{recursive}{A logical. Whether make parent directory recursively when it does NOT exist.}
 
 \item{add_time}{A logical. Whether add the time you execute this function to path for unique naming.}
+
+\item{watch}{A logical.  Whether trace your \emph{qsub}bed/\emph{qrecall}ed job by using \code{\link{watch}}.}
 }
 \value{
-Invisible. A list of Job ID, the path you write your file to, and the time you execute this function.
+Invisible. A list of Job ID, the path where you write your file, and the time you execute this function.
 }
 \description{
 write out and \emph{qrecall}

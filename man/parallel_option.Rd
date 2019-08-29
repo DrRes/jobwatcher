@@ -4,7 +4,8 @@
 \alias{parallel_option}
 \title{Parallel job requirement}
 \usage{
-parallel_option(env = "def_slot", slot = 1L, memory = 5.3,
+parallel_option(env = c("def_slot", "mpi", "mpi-fillup", "mpi_4",
+  "mpi_8", "mpi_16", "mpi_24"), slot = 1L, memory = 5.3,
   master_memory = NULL, ljob = FALSE, no_rerun = TRUE,
   special_que = NULL, docker_images = NA_character_)
 }
@@ -21,7 +22,7 @@ parallel_option(env = "def_slot", slot = 1L, memory = 5.3,
 
 \item{no_rerun}{A logical. Whether allow to run on rerun ques.}
 
-\item{special_que}{A character (option). Choose one of "cp", "docker", "knl", "gpu", "\emph{groupname}". If specified, ljob option will be ignored.}
+\item{special_que}{A character (option). Choose one of "cp", "docker", "knl", "gpu", "\emph{groupname}", "exclusive"(equivalent to groupname). If specified, ljob option will be ignored.}
 
 \item{docker_images}{A character (option). Valid only if special_que == "docker".}
 }

@@ -38,10 +38,13 @@ qsub_function(..., script_path, script_dir = NA_character_,
 
 \item{qsub_args}{Additional arguments for \emph{qsub}.}
 
-\item{jobwatch_args}{A list. Elements are passed to \code{\link{jobwatch}}}
+\item{jobwatch_args}{A list. Elements are passed to \code{\link{watch}}}
+}
+\value{
+A function which has a dammy argument
 }
 \description{
-short hand of creating a function
-doing fixed \code{\link{write_and_qsub}} and \code{\link{jobwatch}}
-regardless arguments of created function.
+Short hand of creating a function
+doing \code{\link{qsub}} with \code{watch = TRUE}.
+The created function has a dammy argument which has no effect.
 }

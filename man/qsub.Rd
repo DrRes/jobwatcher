@@ -4,14 +4,16 @@
 \alias{qsub}
 \title{\emph{qsub} a file}
 \usage{
-qsub(path, qsub_args = "", qrecall = FALSE)
+qsub(path, args = NA, watch = FALSE, ...)
 }
 \arguments{
 \item{path}{A character. The path to a \emph{qsub/qrecall} file.}
 
-\item{qsub_args}{A character. Additional arguments for \emph{qsub/qrecall}.}
+\item{args}{A character. Additional arguments for \emph{qsub/qrecall}. Arguments written in the original file will be ignored.}
 
-\item{qrecall}{A logical. Whether use qrecall -file instead of qsub.}
+\item{watch}{A logical.  Whether trace your \emph{qsub}bed/\emph{qrecall}ed job by using \code{\link{watch}}.}
+
+\item{...}{Additional arguments passed directly to \code{\link{watch}} if watch is TRUE.}
 }
 \value{
 Invisible. A list of Job ID, the path you write your file to, and the time you execute this function.

@@ -1,106 +1,69 @@
-vacant_tbl <- function(colname){
-  matrix(nrow = 0, ncol = length(colname)) %>%
-    tibble::as_tibble() %>%
-    dplyr::mutate_all(as.character) %>%
-    `colnames<-`(colname)
-}
-
-try_xml_to_tbl <- function(xml){
-  tbl_colnames <- c("JB_owner","JB_job_number",
-                    "taskid","slots","JB_pe_id","granted_pe",
-                    "exit_status","failed","queue_name","host_name",
-                    "JB_name","JAT_qsub_time","JAT_start_time","JAT_end_time",
-                    "ru_wallclock","cpu","memory","maxvmem","r_mem","r_q","r_cpu",
-                    "qdel","failed_txt","recommended_queue","recommended_memory","recommended_option")
-  vacant_result <- vacant_tbl(tbl_colnames)
-  tryCatch(
-    {
-      xml %>% XML::xmlToDataFrame(stringsAsFactors = F) %>% tibble::as_tibble() -> tbl
-      dplyr::setdiff(tbl_colnames, colnames(tbl)) -> missing_colnames
-      purrr::reduce(missing_colnames, ~ dplyr::mutate(.x, !!.y := NA_character_), .init = tbl) -> tbl
-      tbl %>% dplyr::select(!!!tbl_colnames)
-    },
-    error = function(e) vacant_result,
-    warning = function(e) vacant_result
-  )
-}
-
-#' get \emph{qreport} results in xml fromat
+#' watch a \emph{qsub}bed job by using \emph{qreport}
 #'
-#' @param ID Job ID.
-#' @param begin A character of \strong{\%Y\%m\%d\%H\%M} format.
-#' @param user Your user ID. (optional)
-#' @export
-qreport_xml <- function(ID, begin, user = NA_character_){#ID must NOT be array type.
-  purrr::map(list(ID, begin, user), ~ assertthat::assert_that(length(.x) == 1))
-  c(ID, begin, user) %<-% purrr::map(list(ID, begin, user), vctrs::vec_cast, character())
-  user_option <- dplyr::if_else(is.na(user), "", paste0(" -o ", user))
-  suppressWarnings(system(
-    paste0("qreport -j ", ID, user_option, " -b ", begin, " -x"),
-    intern = TRUE
-  ) -> result)
-  result
-}
-
-#' get \emph{qreport} results as a tibble
-#'
-#' @inheritParams qreport_xml
-#' @export
-qreport_tbl <- function(ID, begin, user = NA_character_){#ID must NOT be array type.
-  qreport_xml(ID, begin, user) %>% try_xml_to_tbl()
-}
-
-qsub_verbose <- function(ID_body, task, time){
-  stringr::str_glue("ID: ", crayon::cyan(ID_body), 
-                    "\ntaskid: ", crayon::cyan(stringr::str_c(task, collapse = ", ")),
-                    "\ntime: ", crayon::cyan(time)) %>% cli::cat_line()
-}
-
-#' watch a \emph{qsub} job via \emph{qreport}
-#'
-#' @param x A list of your job ID, the path of your qsub file, and the time you execute qsub or time before that.
+#' @param ID Your job ID or job name
+#' @param path  A path of your qsub file (optional). If unspecified, max_repeat will be set as 0.
+#' @param time A character of \strong{\%Y\%m\%d\%H\%M} format. The time you execute qsub or time before that (optional).
 #' @param sys_sleep A numeric. \emph{qreport} interval in seconds.
 #' @param max_repeat A integer. Total times of trying \emph{qsub} the same file.
-#' @param qsub_args A character. Additional arguments for \emph{qsub/qrecall}.
+#' @param give_up One of "error", "warning", "message". Default is "error".
+#' @param qsub_args A character. Additional arguments for re-\emph{qsub}/re-\emph{qrecall}. Arguments written in the original file will be ignored.
 #' @param modify_req A logical. When re-qsubbing, whether to add recommended requests to qsub_args
-#' @param qrecall A logical. Whether use \emph{qrecall -file} instead of \emph{qsub} when re-subbing your job.
+#' @param as_qrecall A logical. Whether use \emph{qrecall -file} instead of \emph{qsub} when re-subbing your job.
 #' @param verbose A logical.
 #' @param debug A logical.
 #' @return Invisible. A list of your final job ID, the path of your qsub file, and the time of final qsub.
 #' @export
-jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", modify_req = TRUE, qrecall = FALSE, verbose = FALSE, debug = FALSE){
+watch <- function(ID, path = NA, time = NA,
+                  sys_sleep = 60L, max_repeat = 2L, 
+                  give_up = c("error", "warning", "message"),
+                  qsub_args = "", modify_req = FALSE,
+                  as_qrecall = FALSE,
+                  verbose = FALSE, debug = FALSE){
+  verify_hgc()
   #perse ID and time
   if (debug) {verbose <- TRUE}
-  x %>%
-    purrr::walk(~ assertthat::assert_that(length(.x) == 1)) %>%
-    purrr::map(vctrs::vec_cast, character()) -> x
-  ID = path = time = NA_character_
-  c(ID, path, time) %<-% x
-  assertthat::assert_that(!is.na(ID))
-  assertthat::assert_that(fs::file_exists(path))
-  assertthat::assert_that(stringr::str_length(time) == 12)
-  ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
-  ID_body <- ID_vec[1]
-  task <- ID_vec[2:4] %>% seq_int_chr()
+  verify_scalar(ID, path, time)
+  verify_no_na(ID)
+  c(ID, path, time) %<-% .map_as_character(ID, path, time)
+  if(max_repeat > 0L) verify_file_exists(path)
+  if (is.na(path)) path <- "<Your job>"
+  assertthat::assert_that(is.na(time) || stringr::str_length(time) == 12)
+  assign_oneof_default_arg_chr("give_up")
+  
+  give_up_fun <- 
+    switch(give_up,
+           "error" = rlang::abort,
+           "warning" = rlang::warn,
+           "message" = rlang::inform,
+           rlang::abort("function select error", "unexpected_error")
+           )
+  qsub_qrecall <- ifelse(as_qrecall, qrecall, qsub)
+  
+  ID_body = task = NULL
+  c(ID_body, task) %<-% parse_id(ID)
   if (verbose) {
-    todo(crayon::green(path))
-    qsub_verbose(ID_body, task, time)
-    }
+    rlang::inform(todo(crayon::green(path)))
+    rlang::inform(qsub_verbose(ID_body, task, time))
+  }
+  
   counter <- 0
-  user = fs::path_home() %>% fs::path_file() %>% as.character()
+  user <- get_user_name()
   while (TRUE) {
     Sys.sleep(sys_sleep)
-    rep <- qreport_tbl(ID_body, time, user)
+    rep <- qreport(ID_body, time, user, type = "tibble")
     if (debug) {
       print("qreport: ")
       print(rep)
-      }
-    rep %>%
+    }
+    rep_filt <- 
+      rep %>%
       tidyr::replace_na(list(failed_txt = "")) %>%
-      dplyr::filter(!!sym("failed_txt") != "Rescheduling") -> rep_filt
+      dplyr::filter(!!sym("failed_txt") != "Rescheduling")
     if (nrow(rep_filt) > 0) {
-      rep_filt %>% dplyr::mutate_at(dplyr::vars("exit_status", "failed"), as.integer) -> rep_filt
-      rep_filt %>% dplyr::filter(!!sym("taskid") %in% task) -> rep_filt
+      rep_filt <-
+        rep_filt %>% 
+        dplyr::mutate_at(dplyr::vars("exit_status", "failed"), as.integer) %>% 
+        dplyr::filter(!!sym("taskid") %in% task)
       if (debug) {
         print("filtered: ")
         print(rep_filt)
@@ -109,17 +72,19 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", modify
         }
       if (identical(dplyr::setdiff(task, rep$taskid), character(0))) {
         if (sum(rep_filt$exit_status, rep_filt$failed) == 0) {
-          if (debug) as.data.frame(rep) %>% print()#debug
-          message(paste0("'", path, "' has been done.")) #message->stderr, inform->stdout
-          if (verbose) rlang::inform(done("'", crayon::cyan(path), "' has been done.")) #message and print
+          if (debug) print(as.data.frame(rep))#debug
+          rlang::inform(done("'", crayon::cyan(path), "' has been done.")) #message->stderr, inform->stdout
+          if (verbose) message(paste0("'", path, "' has been done.")) #message and print
           break
         }else{
           counter <- counter + 1
           if (verbose) {
-            fail("The job with",
-                 "\n ID: ", crayon::cyan(ID_body),
-                 "\n path: ", crayon::cyan(path),
-                 "\nhas failed.")
+            rlang::inform(fail(
+              "The job with",
+              "\n ID: ", crayon::cyan(ID_body),
+              "\n path: ", crayon::cyan(path),
+              "\nhas failed."
+            ))
             as.data.frame(rep) %>% print()
             }#debug
           if (counter < max_repeat) {
@@ -127,47 +92,57 @@ jobwatch <- function(x, sys_sleep = 60L, max_repeat = 2L, qsub_args = "", modify
             if (modify_req) {
               qsub_args_new <- paste0(qsub_args, " ", rep_filt$recommended_option[1])
               if (qsub_args == "" || length(qsub_args) == 0) {
-                readr::read_lines(path) %>% 
-                  c(qsub_args_new) %>% 
-                  write_job(path, recursive = TRUE, add_time = TRUE) %->% c(path, time)
+                path <- write_qsubfile(c(readr::read_lines(path), qsub_args_new), path, recursive = TRUE, add_time = TRUE)
                 qsub_args_new <- qsub_args 
                }
             }
-            c(ID, path, time) %<-% qsub(path, qsub_args_new, qrecall)
+            c(ID, path, time) %<-% qsub_qrecall(path, qsub_args_new, watch = FALSE)
             if (modify_req) {
-              message(paste0("#", counter, " resub: ", path, "\nadditional args: ", qsub_args_new))
+              rlang::inform(paste0("#", counter, " resub: ", path, "\nadditional args: ", qsub_args_new))
             }else{
-              message(paste0("#", counter, " resub: ", path))
+              rlang::inform(paste0("#", counter, " resub: ", path))
             }
-            ID_vec <- stringr::str_split(ID, "\\.|-|:")[[1]] %>% as.integer()
-            ID_body <- ID_vec[1]
-            task <- ID_vec[2:4] %>% seq_int_chr()
+            c(ID_body, task) %<-% parse_id(ID)
             if (verbose) {
               if (modify_req) {
                 rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path), "\nadditional args: ", qsub_args_new))
               }else{
                 rlang::inform(todo("#", counter, " resub: ", crayon::cyan(path)))
               }
-              qsub_verbose(ID_body, task, time)
+              rlang::inform(qsub_verbose(ID_body, task, time))
               }
           }else{
-            rlang::abort(paste0("'", path, "' has something to cause error or fail."), "qsub_contents_error")
+            give_up_fun(paste0("'", path, "' has something to cause error or fail."), "qsub_contents_error")
           }
         }
       }
     }
   }
-  invisible(list(ID, path, time))
+  invisible(list(ID = ID, path = path, time = time))
 }
 
 #' make function for qsub a job and watch progress
 #' 
-#' @description short hand of creating a function 
-#'   doing fixed \code{\link{write_and_qsub}} and \code{\link{jobwatch}}
-#'   regardless arguments of created function.
+#' @description Short hand of creating a function 
+#'   doing \code{\link{qsub}} with \code{watch = TRUE}. 
+#'   The created function has a dammy argument which has no effect.
 #'
-#' @inheritParams write_and_qsub
-#' @param jobwatch_args A list. Elements are passed to \code{\link{jobwatch}}
+#' @param ... Your codes (default: \emph{bash} codes). Each argument should be a character vector. Multiple arguments and multiple elements will be separated with a line break.
+#' @param script_path A character. The path to write a file.
+#' @param script_dir A character. It will concatenated with file_path..
+#' @param name A character
+#' @param first_line A character. It is written in the first line.
+#' @param parallel A character
+#' @param arrayjob A character
+#' @param directory A character
+#' @param use_bash_profile A logical. Whether \emph{source ~/.bash_profile} or not.
+#' @param other_req A character. Other requirements for \emph{qsub}
+#' @param recursive A logical. Whether make parent directory recursively when it does NOT exist.
+#' @param add_time A logical. Whether add the time you execute this function to path for unique naming.
+#' @param qsub_args Additional arguments for \emph{qsub}.
+#' @param jobwatch_args A list. Elements are passed to \code{\link{watch}}
+#' @seealso \url{https://supcom.hgc.jp/internal/mediawiki/qsub_%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89}
+#' @return A function which has a dammy argument
 #' @export
 qsub_function <- function(...,
                           script_path,
@@ -183,19 +158,10 @@ qsub_function <- function(...,
                           add_time = TRUE,
                           qsub_args = "", 
                           jobwatch_args = list()){
-  NAME = FIRST_LINE = PARALLEL = ARRAYJOB = DIRECTORY = USE_BASH_PROFILE = OTHER_REQ = SCRIPT_PATH = SCRIPT_DIR = RECURSIVE = ADD_TIME = QSUB_ARGS = NA_character_
-  c(NAME, FIRST_LINE, PARALLEL, ARRAYJOB, DIRECTORY, USE_BASH_PROFILE, OTHER_REQ, SCRIPT_PATH, SCRIPT_DIR, RECURSIVE, ADD_TIME, QSUB_ARGS) %<-% 
-    list(name, first_line, parallel, arrayjob, directory, use_bash_profile, other_req, script_path, script_dir, recursive, add_time, qsub_args)
-
+  force(list(name, first_line, parallel, arrayjob, directory, use_bash_profile, other_req, script_path, script_dir, recursive, add_time, qsub_args))
   function(dammy_arg){
-    write_and_qsub(...,
-                   script_path = SCRIPT_PATH, script_dir = SCRIPT_DIR, name = NAME, first_line = FIRST_LINE, parallel = PARALLEL, arrayjob = ARRAYJOB, directory = DIRECTORY, 
-                   use_bash_profile = USE_BASH_PROFILE, other_req = OTHER_REQ, recursive = RECURSIVE, add_time = ADD_TIME, qsub_args = QSUB_ARGS
-                   ) -> jobs
-    do.call(jobwatch, c(list(x = jobs), jobwatch_args))
+    qsubfile <- make_qsubfile(..., name = name, first_line = first_line, parallel = parallel, arrayjob = arrayjob, directory = directory, use_bash_profile = use_bash_profile, other_req = other_req)
+    path <- write_qsubfile(x = qsubfile, path = script_path, recursive = recursive, add_time = add_time)
+    do.call(qsub, c(list(path = path, args = qsub_args, watch = TRUE), jobwatch_args))
   }
 }
-
-# qrecall files and watch progress
-# @export
-#qrecall_watch <- purrr::compose(purrr::partial(jobwatch, max_repeat = 1L, qrecall = TRUE), write_and_qrecall)
