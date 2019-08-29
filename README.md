@@ -36,19 +36,6 @@ Engine(UGE)かどうかを内部で判定しており, 環境によって挙動�
 (もし一行目冒頭に\#!が記述されている実行可能ファイルであった場合はbashを介さず直接実行します.)
 また, `qrecall`はHGC環境以外ではアクティブな変更を何も加えません.
 
-``` r
-df <-
-  tibble::tribble(
-    ~functions, ~HGC, ~UGE, ~Other,
-    "qsub", "qsub", "qsub", "send commands to terminal",
-    "qrecall", "qrecall", "(no effect)", "(no effect)",
-    "qreport", "qreport", "(error)", "(error)",
-    "qacct", "qreport -c", "qacct", "(error)",
-    "qstat", "qstat", "qstat", "(error)"
-  )
-knitr::kable(df)
-```
-
 | functions | HGC        | UGE         | Other                     |
 |:----------|:-----------|:------------|:--------------------------|
 | qsub      | qsub       | qsub        | send commands to terminal |

@@ -52,22 +52,23 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
       {p_load_chr("drake")}
       {p_load_github_chr("jobwatcher")}
       
-      {p_ruler("declare variables")}
+      ',{p_ruler("declare variables")},'
       Hello <- c("H", "e", "l", "l", "o")
       
-      {p_ruler("parse config")}
+      ',{p_ruler("parse config")},'
       # For config yaml files, we recommend fascinating {{config}} and {{rlist}} packages to parse them.
       
-      {p_ruler("make directories")}
+      ',{p_ruler("make directories")},'
       fs::dir_create("{dir_output}")
       fs::dir_create("{log_output}")
       
-      {p_ruler("summarize in/out paths")}
-      your_qrecall_objects <- "/archive/data/hgc1043/snamba/.jobwatch/for_qrecall.txt"
+      ',{p_ruler("summarize in/out paths")},'
+      your_qrecall_objects_1 <- "/archive/data/hgc1043/snamba/.jobwatch/for_qrecall.txt"
+      your_qrecall_objects_2 <- "/archive/data/hgc1043/snamba/.jobwatch/for_qrecall_2.txt"
       
-      {p_ruler("intermediate file paths")}
+      ',{p_ruler("intermediate file paths")},'
       
-      {p_ruler("make functions of qscript files")}
+      ',{p_ruler("make functions of qscript files")},'
       dir_opt <- directory_option(out = "{log_output}", err = "{log_output}")
       pl_makefile <- qsub_function(
         "touch {file_helloworld}",
@@ -95,10 +96,10 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
         directory = dir_opt
       )
       
-      {p_ruler("qrecall")}
-      job_recall <- qrecall(your_qrecall_objects, watch = TRUE, max_repeat = 1L, qsub_args = "-o {log_qrecall}")
+      ',{p_ruler("qrecall")},'
+      job_recall <- write_and_qrecall(your_qrecall_objects_1, your_qrecall_objects_2, log_path = "{log_qrecall}", watch = TRUE)
       
-      {p_ruler("make pipeline")}
+      ',{p_ruler("make pipeline")},'
       pipeline <- 
         drake::drake_plan(
           makefile = pl_makefile(),
@@ -107,7 +108,7 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
           helloworld = pl_helloworld(c(hello, world))
         )
         
-      {p_ruler("run pipeline")}
+      ',{p_ruler("run pipeline")},'
       ggsave_pipeline(pipeline, "{fs::path(pipe_dir, "log", "pipeline_pre.pdf")}", width = 30, height = 10)
       drake::make(pipeline, jobs = {n_parallel}L)
       ggsave_pipeline(pipeline, "{fs::path(pipe_dir, "log", "pipeline_post.pdf")}", width = 30, height = 10)

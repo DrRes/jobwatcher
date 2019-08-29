@@ -40,7 +40,7 @@ library(jobwatcher)
 実行環境がHuman Genome Center(HGC)スパコンまたはUniva Grid Engine(UGE)かどうかを内部で判定しており, 環境によって挙動が異なります.\ 
 `qsub`および`qrecall`関数はUGE環境でなくとも使うことができます. その場合, `qsub`は指定したファイルを`system`関数を用いてshで実行します. (もし一行目冒頭に#!が記述されている実行可能ファイルであった場合はbashを介さず直接実行します.) また, `qrecall`はHGC環境以外ではアクティブな変更を何も加えません.
 
-```{r funcitons}
+```{r funcitons, echo=FALSE}
 df <-
   tibble::tribble(
     ~functions, ~HGC, ~UGE, ~Other,

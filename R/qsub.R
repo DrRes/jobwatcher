@@ -59,6 +59,25 @@ write_qsubfile <- function(x, path, recursive, add_time) {
   invisible(path)
 }
 
+#' write out and \emph{qrecall}
+#' 
+#' @param ... Paths to recall. Each argument should be a character vector. Multiple arguments and multiple elements will be separated with a line break.
+#' @param path A character. The path to write a file for \emph{qrecall}. If path is a directory, prefix 'qrecall' will be added to the file name.
+#' @param log_path A character (optional). The path to write a stdout of \emph{qrecall}. Default: home directory.
+#' @param recursive A logical. Whether make parent directory recursively when it does NOT exist.
+#' @param add_time A logical. Whether add the time you execute this function to path for unique naming.
+#' @param watch A logical.  Whether trace your \emph{qsub}bed/\emph{qrecall}ed job by using \code{\link{watch}}.
+#' @return Invisible. A list of Job ID, the path where you write your file, and the time you execute this function.
+#' @export
+write_and_qrecall <- function(..., path = fs::path_home(), log_path = NA_character_, recursive = FALSE, add_time = TRUE, watch = FALSE) {
+  inputs <- dots_parser(...)
+  time <- character()
+  if (fs::is_dir(path)) path <- fs::path(path, "qrecall")
+  path <- write_qsubfile(inputs, path, recursive, add_time)
+  if (!is.null(log_path) && !is.na(log_path)) verify_path(log_path, recursive)
+  qrecall(path, args = make_option(log_path, " -o"), watch = watch)
+}
+
 
 #' \emph{qsub} a file
 #' 
