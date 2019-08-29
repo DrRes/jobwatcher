@@ -3,7 +3,7 @@
 #' @param ID Your job ID or job name
 #' @param path  A path of your qsub file (optional). If unspecified, max_repeat will be set as 0.
 #' @param time A character of \strong{\%Y\%m\%d\%H\%M} format. The time you execute qsub or time before that (optional).
-#' @param sys_sleep A numeric. \emph{qreport} interval in seconds
+#' @param sys_sleep A numeric. \emph{qreport} interval in seconds.
 #' @param max_repeat A integer. Total times of trying \emph{qsub} the same file.
 #' @param give_up One of "error", "warning", "message". Default is "error".
 #' @param qsub_args A character. Additional arguments for re-\emph{qsub}/re-\emph{qrecall}. Arguments written in the original file will be ignored.
@@ -16,7 +16,7 @@
 watch <- function(ID, path = NA, time = NA,
                   sys_sleep = 60L, max_repeat = 2L, 
                   give_up = c("error", "warning", "message"),
-                  qsub_args = "", modify_req = TRUE,
+                  qsub_args = "", modify_req = FALSE,
                   as_qrecall = FALSE,
                   verbose = FALSE, debug = FALSE){
   verify_hgc()

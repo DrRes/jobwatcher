@@ -56,7 +56,7 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
       Hello <- c("H", "e", "l", "l", "o")
       
       ',{p_ruler("parse config")},'
-      # For config yaml files, we recommend fascinating {{config}} and {{rlist}} packages to parse them.
+      # If you use config yaml files, we recommend fascinating {{config}} and {{rlist}} packages to parse them.
       
       ',{p_ruler("make directories")},'
       fs::dir_create("{dir_output}")
@@ -69,7 +69,10 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
       ',{p_ruler("intermediate file paths")},'
       
       ',{p_ruler("make functions of qscript files")},'
-      dir_opt <- directory_option(out = "{log_output}", err = "{log_output}")
+      dir_opt <- directory_option(
+        out = "{log_output}",
+        err = "{log_output}"
+      )
       pl_makefile <- qsub_function(
         "touch {file_helloworld}",
         script_path = "makefile",
@@ -103,7 +106,7 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
       ',{p_ruler("qrecall")},'
       job_recall <- write_and_qrecall(
         your_qrecall_objects_1, your_qrecall_objects_2,
-        path = "{log_qrecall}"
+        path = "{log_pipeline}",
         log_path = "{log_qrecall}",
         watch = TRUE
       )
@@ -185,6 +188,6 @@ build_pipeline <- function(pipe_name, pipe_dir, n_parallel = 2L, pipe_memory = 3
   purrr::walk2(path_list, file_list, ~ write(.y, .x, append = FALSE)) %>%
     purrr::walk(~ rlang::inform(done("File '", crayon::cyan(.x), "' has been written.")))
   rlang::inform(todo("Please edit '", crayon::cyan(path_list[[2]]), "' for your own pipeline."))
-  rlang::inform(todo("Then, run ", crayon::green(paste0("qsub ", path_list[[1]]))))
+  rlang::inform(todo("Then, run ", crayon::green(paste0('qsub("', path_list[[1]], '")'))))
 }
 
