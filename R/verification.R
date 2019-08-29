@@ -20,7 +20,10 @@ verify_uge <- function() {
 }
 
 .as_character <- function(x) vctrs::vec_cast(x, character())
-.map_as_character <- function(...) purrr::map(rlang::list2(...), .as_character)
+.map_as_character <- function(...) {
+  x <- rlang::list2(...)
+  purrr::map(x, .as_character)
+}
 
 is_number <- function(x) stringr::str_detect(x, "^[:digit:]+$")
 

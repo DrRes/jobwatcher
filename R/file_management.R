@@ -74,30 +74,39 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
         "touch {file_helloworld}",
         script_path = "makefile",
         script_dir = "{dir_script}",
-        directory = "dir_opt"
+        directory = "dir_opt",
+        other_req = "#$ -l os7"
       )
       pl_hello <- qsub_function(
         as_bash_array(Hello = Hello),
         "echo ${{Hello[$SGE_TASK_ID]}} >> {file_helloworld}",
         script_path = "hello",
         script_dir = "{dir_script}",
-        directory = dir_opt
+        directory = dir_opt,
+        other_req = "#$ -l os7"
       )
       pl_world <- qsub_function(
         "echo World >> {file_helloworld}",
         script_path = "world",
         script_dir = "{dir_script}",
-        directory = dir_opt
+        directory = dir_opt,
+        other_req = "#$ -l os7"
       )
       pl_helloworld <- qsub_function(
         "echo HelloWorld >> {file_helloworld}",
         script_path = "helloworld",
         script_dir = "{dir_script}",
-        directory = dir_opt
+        directory = dir_opt,
+        other_req = "#$ -l os7"
       )
       
       ',{p_ruler("qrecall")},'
-      job_recall <- write_and_qrecall(your_qrecall_objects_1, your_qrecall_objects_2, log_path = "{log_qrecall}", watch = TRUE)
+      job_recall <- write_and_qrecall(
+        your_qrecall_objects_1, your_qrecall_objects_2,
+        path = "{log_qrecall}"
+        log_path = "{log_qrecall}",
+        watch = TRUE
+      )
       
       ',{p_ruler("make pipeline")},'
       pipeline <- 
@@ -122,7 +131,8 @@ pipeline_preset <- function(pipe_name, pipe_dir, n_parallel, pipe_memory) {
       parallel = parallel_option(slot = n_parallel, memory = pipe_memory, ljob = TRUE),
       arrayjob = arrayjob_option(),
       directory = directory_option(out = log_pipeline, err = log_pipeline),
-      use_bash_profile = TRUE
+      use_bash_profile = TRUE,
+      other_req = "#$ -l os7"
     )
   list(pipe_qsubfile, pipe_Rfile)
 }

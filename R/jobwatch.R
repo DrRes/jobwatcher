@@ -25,7 +25,7 @@ watch <- function(ID, path = NA, time = NA,
   verify_scalar(ID, path, time)
   verify_no_na(ID)
   c(ID, path, time) %<-% .map_as_character(ID, path, time)
-  if(max_repeat > 0L) assertthat::assert_that(fs::file_exists(path))
+  if(max_repeat > 0L) verify_file_exists(path)
   if (is.na(path)) path <- "<Your job>"
   assertthat::assert_that(is.na(time) || stringr::str_length(time) == 12)
   assign_oneof_default_arg_chr("give_up")
@@ -54,10 +54,11 @@ watch <- function(ID, path = NA, time = NA,
     if (debug) {
       print("qreport: ")
       print(rep)
-      }
-    rep %>%
+    }
+    rep_filt <- 
+      rep %>%
       tidyr::replace_na(list(failed_txt = "")) %>%
-      dplyr::filter(!!sym("failed_txt") != "Rescheduling") -> rep_filt
+      dplyr::filter(!!sym("failed_txt") != "Rescheduling")
     if (nrow(rep_filt) > 0) {
       rep_filt <-
         rep_filt %>% 
